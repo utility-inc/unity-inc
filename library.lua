@@ -516,7 +516,7 @@ function Hive:CreateSection(name)
 			BackgroundColor3 = actualState and THEME.Accent or THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 40, 0, 20),
-			Position = UDim2.new(1, -50, 0.5, 0),
+			Position = UDim2.new(1, -55, 0.5, 0),
 			Text = "",
 			AutoLocalize = false,
 		})
