@@ -511,14 +511,12 @@ function Hive:CreateSection(name)
 			LayoutOrder = #section.Components + 1,
 		})
 		
-		local toggleBg = CreateInstance("TextButton", {
+		local toggleBg = CreateInstance("Frame", {
 			Name = "ToggleBg",
 			BackgroundColor3 = actualState and THEME.Accent or THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 40, 0, 20),
 			Position = UDim2.new(1, -50, 0.5, 0),
-			Text = "",
-			AutoLocalize = false,
 		})
 		
 		local toggleKnob = CreateInstance("Frame", {
