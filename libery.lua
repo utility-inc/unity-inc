@@ -81,7 +81,7 @@ function Hive:CreateGUI()
 		BorderColor3 = THEME.Border,
 		BorderSizePixel = 1,
 		Position = UDim2.new(0.5, -250, 0.5, -250),
-		Size = UDim2.new(0, 500, 0, 500),
+		Size = UDim2.new(0, 550, 0, 500),
 		ClipsDescendants = true,
 		Draggable = false,
 	})
@@ -526,7 +526,7 @@ function Hive:CreateSection(name)
 		knobCorner.Parent = sliderKnob
 		
 		sliderFill.Parent = sliderBg
-		sliderKnob.Parent = sliderFill
+		sliderKnob.Parent = sliderBg
 		label.Parent = sliderFrame
 		valueLabel.Parent = sliderFrame
 		sliderBg.Parent = sliderFrame
@@ -541,6 +541,7 @@ function Hive:CreateSection(name)
 			
 			local bgWidth = sliderBg.AbsoluteSize.X
 			sliderFill.Size = UDim2.new(0, bgWidth * percent, 1, 0)
+			sliderKnob.Position = UDim2.new(0, bgWidth * percent, 0.5, 0)
 			valueLabel.Text = tostring(newValue)
 			
 			callback(newValue)
@@ -597,7 +598,7 @@ function Hive:CreateSection(name)
 			Name = "TextBox",
 			BackgroundColor3 = THEME.Border,
 			BorderSizePixel = 0,
-			Size = UDim2.new(1, 0, 0, 30),
+			Size = UDim2.new(1, 0, 0, 34),
 			Text = "",
 			PlaceholderText = placeholder or "Enter text...",
 			PlaceholderColor3 = THEME.TextSecondary,
