@@ -409,8 +409,7 @@ function Hive:CreateSection(name)
 			BackgroundColor3 = defaultState and THEME.Accent or THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 40, 0, 20),
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -10, 0.5, 0),
+			Position = UDim2.new(1, -50, 0.5, 0),
 		})
 		
 		local toggleKnob = CreateInstance("Frame", {
@@ -418,8 +417,7 @@ function Hive:CreateSection(name)
 			BackgroundColor3 = THEME.Text,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 16, 0, 16),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(0, -10, 0.5, 0),
+			Position = defaultState and UDim2.new(0, 22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
 		})
 		
 		local label = CreateInstance("TextLabel", {
@@ -454,7 +452,7 @@ function Hive:CreateSection(name)
 			state = newState
 			toggleBg.BackgroundColor3 = state and THEME.Accent or THEME.Border
 			
-			local targetPos = state and UDim2.new(1, -26, 0.5, 0) or UDim2.new(0, -10, 0.5, 0)
+			local targetPos = state and UDim2.new(0, 22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
 			local tween = TweenService:Create(toggleKnob, TweenInfo.new(0.15), {Position = targetPos})
 			tween:Play()
 			
