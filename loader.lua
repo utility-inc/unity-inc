@@ -6,7 +6,7 @@ lib.Theme.Accent = Color3.fromRGB(0, 200, 120)
 
 local gui = lib:CreateGui()
 
-lib:SetToggleKey(Enum.KeyCode.Escape)
+lib:SetToggleKey(Enum.KeyCode.RightShift)
 
 lib:AddSection("Information")
 
@@ -59,4 +59,4 @@ lib:AddButton("Destroy GUI", function()
 end)
 
 task.wait(1)
-lib:Notification("HiveLib", "Press ESC to toggle GUI", 5)
+lib:Notification("HiveLib", "Press RightShift to toggle GUI", 5)
