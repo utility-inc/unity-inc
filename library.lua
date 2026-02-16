@@ -21,6 +21,13 @@ local THEME = {
 	Border = Color3.fromRGB(60, 60, 80),
 }
 
+local CONFIG = {
+	ToggleOffset = 50,
+	ToggleWidth = 40,
+	ToggleHeight = 20,
+	KnobSize = 16,
+}
+
 local function CreateInstance(className, properties)
 	local instance = Instance.new(className)
 	for prop, value in pairs(properties) do
@@ -502,7 +509,7 @@ function Hive:CreateSection(name)
 	function section:CreateToggle(name, defaultState, callback)
 		local toggleName = name or "Toggle"
 		local savedState = self.Parent:LoadFlag(toggleName)
-		local actualState = savedState ~= nil and savedState or defaultState
+		local state = savedState ~= nil and savedState or defaultState
 		
 		local toggleFrame = CreateInstance("Frame", {
 			Name = "Toggle",
@@ -513,25 +520,25 @@ function Hive:CreateSection(name)
 		
 		local toggleBg = CreateInstance("Frame", {
 			Name = "ToggleBg",
-			BackgroundColor3 = actualState and THEME.Accent or THEME.Border,
+			BackgroundColor3 = state and THEME.Accent or THEME.Border,
 			BorderSizePixel = 0,
-			Size = UDim2.new(0, 40, 0, 20),
-			Position = UDim2.new(1, -50, 0.5, 0),
+			Size = UDim2.new(0, CONFIG.ToggleWidth, 0, CONFIG.ToggleHeight),
+			Position = UDim2.new(1, -CONFIG.ToggleOffset, 0.5, 0),
 		})
 		
 		local toggleKnob = CreateInstance("Frame", {
 			Name = "Knob",
 			BackgroundColor3 = THEME.Text,
 			BorderSizePixel = 0,
-			Size = UDim2.new(0, 16, 0, 16),
+			Size = UDim2.new(0, CONFIG.KnobSize, 0, CONFIG.KnobSize),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = actualState and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
+			Position = state and UDim2.new(1, -CONFIG.KnobSize/2 - 2, 0.5, 0) or UDim2.new(0, CONFIG.KnobSize/2 + 2, 0.5, 0),
 		})
 		
 		local label = CreateInstance("TextLabel", {
 			Name = "Label",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -60, 1, 0),
+			Size = UDim2.new(1, -(CONFIG.ToggleOffset + CONFIG.ToggleWidth + 10), 1, 0),
 			Text = toggleName,
 			TextColor3 = THEME.Text,
 			TextXAlignment = Enum.TextXAlignment.Left,
@@ -539,85 +546,26 @@ function Hive:CreateSection(name)
 			TextSize = 14,
 		})
 		
-		local corner = CreateInstance("UICorner", {
-			CornerRadius = UDim.new(0, 10),
-		})
-		corner.Parent = toggleBg
-		
-		local knobCorner = CreateInstance("UICorner", {
-			CornerRadius = UDim.new(0, 8),
-		})
-		knobCorner.Parent = toggleKnob
-		
-		local keybindBtn = CreateInstance("TextButton", {
-			Name = "KeybindBtn",
-			BackgroundColor3 = THEME.Border,
-			BorderSizePixel = 0,
-			Size = UDim2.new(0, 50, 0, 20),
-			Text = "None",
-			TextColor3 = THEME.TextSecondary,
-			Font = Enum.Font.Gotham,
-			TextSize = 10,
-		})
-		
-		local keybindCorner = CreateInstance("UICorner", {
-			CornerRadius = UDim.new(0, 4),
-		})
-		keybindCorner.Parent = keybindBtn
-		
-		local savedKeybind = self.Parent:LoadConfig("Keybind_" .. toggleName)
-		if savedKeybind then
-			keybindBtn.Text = savedKeybind
-		end
-		
-		local state = actualState
-		local waitingForKey = false
+		CreateInstance("UICorner", { CornerRadius = UDim.new(0, CONFIG.ToggleHeight/2) }).Parent = toggleBg
+		CreateInstance("UICorner", { CornerRadius = UDim.new(0, CONFIG.KnobSize/2) }).Parent = toggleKnob
 		
 		local function updateToggle(newState)
 			state = newState
 			toggleBg.BackgroundColor3 = state and THEME.Accent or THEME.Border
-			
-			local targetPos = state and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
-			toggleKnob.Position = targetPos
-			
+			toggleKnob.Position = state and UDim2.new(1, -CONFIG.KnobSize/2 - 2, 0.5, 0) or UDim2.new(0, CONFIG.KnobSize/2 + 2, 0.5, 0)
 			self.Parent:SaveFlag(toggleName, state)
 			callback(state)
 		end
 		
 		toggleBg.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 and not waitingForKey then
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
 				updateToggle(not state)
-			end
-		end)
-		
-		keybindBtn.MouseButton1Click:Connect(function()
-			waitingForKey = true
-			keybindBtn.Text = "..."
-			keybindBtn.BackgroundColor3 = THEME.Accent
-		end)
-		
-		UserInputService.InputBegan:Connect(function(input, gameProcessed)
-			if waitingForKey and not gameProcessed then
-				local keyName = tostring(input.KeyCode):gsub("Enum.KeyCode.", "")
-				keybindBtn.Text = keyName
-				keybindBtn.BackgroundColor3 = THEME.Border
-				self.Parent:SaveConfig("Keybind_" .. toggleName, keyName)
-				
-				local keyEnum = Enum.KeyCode[keyName]
-				if keyEnum then
-					self.Parent:BindKey(keyEnum, function()
-						updateToggle(not state)
-					end)
-				end
-				
-				waitingForKey = false
 			end
 		end)
 		
 		toggleBg.Parent = toggleFrame
 		toggleKnob.Parent = toggleBg
 		label.Parent = toggleFrame
-		keybindBtn.Parent = toggleFrame
 		
 		toggleFrame.Parent = contentFrame
 		table.insert(self.Components, toggleFrame)
