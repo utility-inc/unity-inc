@@ -584,8 +584,8 @@ function Hive:CreateSection(name)
 			callback(state)
 		end
 		
-		toggleFrame.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 and not waitingForKey then
+		toggleFrame.MouseButton1Click:Connect(function()
+			if not waitingForKey then
 				updateToggle(not state)
 			end
 		end)
