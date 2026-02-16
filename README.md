@@ -22,7 +22,6 @@ local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-
 ## Usage
 
 ```lua
--- Script Name: MyScript
 local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/library.lua"))()
 
 local GUI = Hive.new("MyScript")
