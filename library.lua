@@ -284,7 +284,8 @@ function Hive:CreateGUI()
 		Name = "TabPadding",
 		PaddingLeft = UDim.new(0, 10),
 		PaddingRight = UDim.new(0, 10),
-		PaddingTop = UDim.new(0, 6),
+		PaddingTop = UDim.new(0, 5),
+		PaddingBottom = UDim.new(0, 5),
 	})
 	
 	local tabScroll = CreateInstance("ScrollingFrame", {
@@ -299,7 +300,7 @@ function Hive:CreateGUI()
 	local tabList = CreateInstance("UIListLayout", {
 		Name = "TabList",
 		FillDirection = Enum.FillDirection.Horizontal,
-		Padding = UDim.new(0, 8),
+		Padding = UDim.new(0, 6),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	})
 	
@@ -446,20 +447,35 @@ function Hive:CreateSector(name, icon)
 	
 	local tabBtn = CreateInstance("TextButton", {
 		Name = "Tab_" .. sectorName,
-		BackgroundColor3 = #self.Sectors == 0 and THEME.Accent or THEME.Border,
+		BackgroundColor3 = #self.Sectors == 0 and THEME.Accent or THEME.Secondary,
 		BorderSizePixel = 0,
-		Size = UDim2.new(0, 60, 0, 28),
-		AutoButtonColor = true,
+		Size = UDim2.new(0, 0, 0, 30),
+		AutoButtonColor = false,
 		Text = iconValue .. (iconValue ~= "" and " " or "") .. sectorName,
 		TextColor3 = THEME.Text,
 		Font = Enum.Font.Gotham,
 		TextSize = 12,
 	})
 	
+	tabBtn.Size = UDim2.new(0, tabBtn.TextBounds.X + 24, 0, 30)
+	
+	local tabStroke = CreateInstance("UIStroke", {
+		Name = "TabStroke",
+		Color = THEME.Border,
+		Thickness = 1,
+	})
+	tabStroke.Parent = tabBtn
+	
 	local tabCorner = CreateInstance("UICorner", {
-		CornerRadius = UDim.new(0, 4),
+		CornerRadius = UDim.new(0, 6),
 	})
 	tabCorner.Parent = tabBtn
+	
+	local tabPadding = CreateInstance("UIPadding", {
+		PaddingLeft = UDim.new(0, 10),
+		PaddingRight = UDim.new(0, 10),
+	})
+	tabPadding.Parent = tabBtn
 	
 	local sectorScrollFrame = CreateInstance("ScrollingFrame", {
 		Name = "Sector_" .. sectorName,
@@ -500,12 +516,24 @@ function Hive:CreateSector(name, icon)
 	tabBtn.MouseButton1Click:Connect(function()
 		for _, s in ipairs(self.Sectors) do
 			s.ScrollFrame.Visible = false
-			s.TabButton.BackgroundColor3 = THEME.Border
+			s.TabButton.BackgroundColor3 = THEME.Secondary
 		end
 		sectorScrollFrame.Visible = true
 		tabBtn.BackgroundColor3 = THEME.Accent
 		self.ActiveSector = sector
 		self:UpdateCanvasSize()
+	end)
+	
+	tabBtn.MouseEnter:Connect(function()
+		if self.ActiveSector ~= sector then
+			tabBtn.BackgroundColor3 = THEME.Border
+		end
+	end)
+	
+	tabBtn.MouseLeave:Connect(function()
+		if self.ActiveSector ~= sector then
+			tabBtn.BackgroundColor3 = THEME.Secondary
+		end
 	end)
 	
 	table.insert(self.Sectors, sector)
