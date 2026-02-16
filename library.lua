@@ -27,7 +27,7 @@ local CONFIG = {
 	ToggleHeight = 20,
 	KnobSize = 16,
 	TabPosition = "Top",
-	TabHeight = 40,
+	TabHeight = 45,
 }
 
 local function CreateInstance(className, properties)
@@ -457,7 +457,7 @@ function Hive:CreateSector(name, icon)
 		TextSize = 12,
 	})
 	
-	tabBtn.Size = UDim2.new(0, tabBtn.TextBounds.X + 24, 0, 30)
+	tabBtn.Size = UDim2.new(0, tabBtn.TextBounds.X + 30, 0, 35)
 	
 	local tabStroke = CreateInstance("UIStroke", {
 		Name = "TabStroke",
