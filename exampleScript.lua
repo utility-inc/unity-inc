@@ -1,5 +1,5 @@
 -- Script Name: Example
-local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/libery.lua"))()
+local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/library.lua"))()
 
 local GUI = Hive.new("Example")
 

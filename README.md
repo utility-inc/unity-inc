@@ -10,55 +10,54 @@ A Roblox Lua GUI library inspired by Hive server aesthetics with draggable windo
 - **Hive Theme** - Blue accent colors matching Hive server style
 - **Built-in Components** - Labels, Buttons, Toggles, Sliders, Inputs
 - **Re-execution Safety** - Automatically cleans up old GUI on re-execute
-- **Attribute Tracking** - Track and restore player attributes
+- **Data Persistence** - Save and load settings per script
+- **Script Folders** - Each script gets its own folder in HiveData
 
 ## Installation
 
 ```lua
-local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/libery.lua"))()
+local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/library.lua"))()
 ```
 
 ## Usage
 
 ```lua
-local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/libery.lua"))()
+-- Script Name: MyScript
+local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/library.lua"))()
 
-local GUI = Hive.new()
+local GUI = Hive.new("MyScript")
 
-local Main = GUI:CreateSection("Main")
-Main:CreateLabel("Welcome to Hive!")
-Main:CreateButton("Click Me", function()
-    print("Button clicked!")
+local Main = GUI:CreateSection("Welcome")
+Main:CreateLabel("Welcome to Hive GUI!")
+Main:CreateLabel("Press Right Shift to toggle")
+
+local Button = GUI:CreateSection("Button Example")
+Button:CreateButton("Notify", function()
+    -- Button action
 end)
 
-Main:CreateToggle(false, function(state)
-    print("Toggle:", state)
+local Toggles = GUI:CreateSection("Toggles")
+local ExampleToggle = Toggles:CreateToggle(false, function(state)
+    -- Toggle action
 end)
 
-Main:CreateSlider(0, 100, 50, function(value)
-    print("Slider value:", value)
-end)
-
-Main:CreateInput("Enter name...", function(text)
-    print("Input:", text)
+local Sliders = GUI:CreateSection("Sliders")
+Sliders:CreateLabel("Example Slider")
+local ExampleSlider = Sliders:CreateSlider(0, 100, 50, function(value)
+    -- Slider action
 end)
 
 GUI:EnableKeySystem()
-GUI:BindKey(Enum.KeyCode.X, function()
-    print("X key pressed!")
-end)
-
 GUI:BindKey(Enum.KeyCode.V, function()
-    print("V key pressed!")
+    GUI:Toggle()
 end)
-
-GUI:SetAttribute("Speed", 50)
 ```
 
 ## API Reference
 
-### Hive.new()
+### Hive.new(scriptName)
 Creates a new Hive GUI instance.
+- `scriptName`: Optional name for the script (creates separate data folder)
 
 ### GUI:CreateSection(name)
 Creates a new section with the given name.
@@ -98,7 +97,7 @@ Enables custom keybinds.
 Binds a key to a callback.
 ```lua
 GUI:BindKey(Enum.KeyCode.X, function()
-    print("X pressed!")
+    -- Action
 end)
 ```
 
@@ -108,13 +107,19 @@ Removes a keybind.
 #### GUI:SetToggleKey(key)
 Changes the toggle key (default: RightShift).
 
-### Attributes
+### Data Persistence
 
-#### GUI:SetAttribute(name, value)
-Sets a player attribute and tracks it for restoration on re-execution.
+#### GUI:Save(key, value)
+Saves a value to the script's data folder.
+```lua
+GUI:Save("MySetting", true)
+```
 
-#### GUI:GetAttribute(name)
-Gets a player attribute value.
+#### GUI:Load(key)
+Loads a saved value.
+```lua
+local value = GUI:Load("MySetting")
+```
 
 ## Controls
 
@@ -130,4 +135,4 @@ Gets a player attribute value.
 
 ## Version
 
-v1.0.1
+v1.0.2
