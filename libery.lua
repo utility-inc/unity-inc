@@ -80,8 +80,8 @@ function Hive:CreateGUI()
 		BackgroundColor3 = THEME.Background,
 		BorderColor3 = THEME.Border,
 		BorderSizePixel = 1,
-		Position = UDim2.new(0.5, -200, 0.5, -250),
-		Size = UDim2.new(0, 400, 0, 500),
+		Position = UDim2.new(0.5, -250, 0.5, -250),
+		Size = UDim2.new(0, 500, 0, 500),
 		ClipsDescendants = true,
 		Draggable = false,
 	})
@@ -498,7 +498,7 @@ function Hive:CreateSection(name)
 			Name = "SliderFill",
 			BackgroundColor3 = THEME.Accent,
 			BorderSizePixel = 0,
-			Size = UDim2.new(0.5, 0, 1, 0),
+			Size = UDim2.new(0, 0, 1, 0),
 		})
 		
 		local sliderKnob = CreateInstance("Frame", {
@@ -507,7 +507,7 @@ function Hive:CreateSection(name)
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 16, 0, 16),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(0.5, 0, 0.5, 0),
+			Position = UDim2.new(1, 0, 0.5, 0),
 		})
 		
 		local corner = CreateInstance("UICorner", {
@@ -539,8 +539,8 @@ function Hive:CreateSection(name)
 			local newValue = math.floor(min + (max - min) * percent)
 			value = newValue
 			
-			sliderFill.Size = UDim2.new(percent, 0, 1, 0)
-			sliderKnob.Position = UDim2.new(percent, 0, 0.5, 0)
+			local bgWidth = sliderBg.AbsoluteSize.X
+			sliderFill.Size = UDim2.new(0, bgWidth * percent, 1, 0)
 			valueLabel.Text = tostring(newValue)
 			
 			callback(newValue)
