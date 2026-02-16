@@ -134,4 +134,4 @@ local value = GUI:Load("MySetting")
 
 ## Version
 
-v1.0.2
+v1.0.3
