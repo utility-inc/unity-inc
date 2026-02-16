@@ -556,7 +556,7 @@ function Hive:CreateSection(name)
 			BackgroundColor3 = THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 50, 0, 20),
-			Position = UDim2.new(1, -140, 0.5, 0),
+			Position = UDim2.new(1, -100, 0.5, 0),
 			Text = "None",
 			TextColor3 = THEME.TextSecondary,
 			Font = Enum.Font.Gotham,
