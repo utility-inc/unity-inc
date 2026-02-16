@@ -1,17 +1,12 @@
---[[
-    HiveLib - A legitimate Roblox utility library
-    Version 1.0.0
-]]
-
 local HiveLib = {}
 HiveLib.__index = HiveLib
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
 
 function HiveLib.new()
     local self = setmetatable({}, HiveLib)
@@ -28,7 +23,6 @@ function HiveLib.new()
         Error = Color3.fromRGB(255, 50, 50)
     }
     self.Notifications = {}
-    self.Components = {}
     self.Keybinds = {}
     self.KeybindConnections = {}
     self.Toggled = true
@@ -116,7 +110,7 @@ function HiveLib:CreateGui()
         Draggable = draggable
     }
     
-    self:SetupDragging(mainFrame, draggable)
+    self:SetupDraggable(mainFrame, draggable)
     self:SetupCloseButton(closeButton)
     
     return self.Gui
@@ -141,8 +135,7 @@ function HiveLib:SetupDraggable(frame, dragArea)
         end
     end)
     
-    local inputService = game:GetService("UserInputService")
-    inputService.InputChanged:Connect(function(input)
+    UserInputService.InputChanged:Connect(function(input)
         if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
             frame.Position = UDim2.new(
@@ -183,9 +176,9 @@ function HiveLib:AddButton(name, callback)
         if callback then callback() end
     end)
     
-    local hover = Instance.new("UICorner")
-    hover.CornerRadius = UDim.new(0, 6)
-    hover.Parent = button
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = button
     
     return button
 end
@@ -234,7 +227,7 @@ function HiveLib:AddToggle(name, default, callback)
     
     return {
         Enabled = function() return enabled end,
-        Set = function(self, state)
+        Set = function(_, state)
             enabled = state
             toggle.BackgroundColor3 = enabled and self.Theme.Success or self.Theme.Secondary
             toggle.Text = enabled and "ON" or "OFF"
@@ -245,6 +238,8 @@ end
 
 function HiveLib:AddSlider(name, min, max, default, callback)
     if not self.Gui then return end
+    
+    default = default or min
     
     local container = Instance.new("Frame")
     container.Name = name
@@ -270,9 +265,9 @@ function HiveLib:AddSlider(name, min, max, default, callback)
     sliderBg.BorderSizePixel = 1
     sliderBg.Parent = container
     
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 4)
-    corner.Parent = sliderBg
+    local sliderCorner = Instance.new("UICorner")
+    sliderCorner.CornerRadius = UDim.new(0, 4)
+    sliderCorner.Parent = sliderBg
     
     local sliderFill = Instance.new("Frame")
     local fillPercent = (default - min) / (max - min)
@@ -284,7 +279,6 @@ function HiveLib:AddSlider(name, min, max, default, callback)
     fillCorner.CornerRadius = UDim.new(0, 4)
     fillCorner.Parent = sliderFill
     
-    local inputService = game:GetService("UserInputService")
     local isDragging = false
     
     local function updateSlider(xPos)
@@ -312,7 +306,7 @@ function HiveLib:AddSlider(name, min, max, default, callback)
         end
     end)
     
-    inputService.InputChanged:Connect(function(input)
+    UserInputService.InputChanged:Connect(function(input)
         if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             updateSlider(input.Position.X)
         end
@@ -422,6 +416,70 @@ function HiveLib:AddSection(title)
     return section
 end
 
+function HiveLib:AddKeybind(name, key, callback, toggleGui)
+    local keybind = {
+        Name = name,
+        Key = key,
+        Callback = callback,
+        ToggleGui = toggleGui or false
+    }
+    
+    table.insert(self.Keybinds, keybind)
+    
+    local connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        
+        local keyCode = type(key) == "string" and Enum.KeyCode[key] or key
+        if input.KeyCode == keyCode then
+            if toggleGui then
+                self:Toggle()
+            end
+            if callback then callback() end
+        end
+    end)
+    
+    table.insert(self.KeybindConnections, connection)
+    
+    return keybind
+end
+
+function HiveLib:RemoveKeybind(name)
+    for i, kb in ipairs(self.Keybinds) do
+        if kb.Name == name then
+            table.remove(self.Keybinds, i)
+            if self.KeybindConnections[i] then
+                self.KeybindConnections[i]:Disconnect()
+                table.remove(self.KeybindConnections, i)
+            end
+            break
+        end
+    end
+end
+
+function HiveLib:SetToggleKey(key)
+    self.ToggleKey = key
+    self:AddKeybind("Toggle GUI", key, nil, true)
+end
+
+function HiveLib:Toggle()
+    if not self.Gui or not self.Gui.ScreenGui then return end
+    
+    self.Toggled = not self.Toggled
+    self.Gui.ScreenGui.Enabled = self.Toggled
+end
+
+function HiveLib:Show()
+    if self.Gui and self.Gui.ScreenGui then
+        self.Gui.ScreenGui.Enabled = true
+    end
+end
+
+function HiveLib:Hide()
+    if self.Gui and self.Gui.ScreenGui then
+        self.Gui.ScreenGui.Enabled = false
+    end
+end
+
 function HiveLib:Notification(title, text, duration)
     duration = duration or 5
     
@@ -470,72 +528,6 @@ function HiveLib:Notification(title, text, duration)
         notifFrame:Destroy()
         table.remove(self.Notifications, table.find(self.Notifications, notifFrame))
     end)
-end
-
-function HiveLib:AddKeybind(name, key, callback, toggleGui)
-    local inputService = game:GetService("UserInputService")
-    
-    local keybind = {
-        Name = name,
-        Key = key,
-        Callback = callback,
-        ToggleGui = toggleGui or false
-    }
-    
-    table.insert(self.Keybinds, keybind)
-    
-    local connection = inputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        
-        local keyCode = type(key) == "string" and Enum.KeyCode[key] or key
-        if input.KeyCode == keyCode then
-            if toggleGui then
-                self:Toggle()
-            end
-            if callback then callback() end
-        end
-    end)
-    
-    table.insert(self.KeybindConnections, connection)
-    
-    return keybind
-end
-
-function HiveLib:RemoveKeybind(name)
-    for i, kb in ipairs(self.Keybinds) do
-        if kb.Name == name then
-            table.remove(self.Keybinds, i)
-            if self.KeybindConnections[i] then
-                self.KeybindConnections[i]:Disconnect()
-                table.remove(self.KeybindConnections, i)
-            end
-            break
-        end
-    end
-end
-
-function HiveLib:SetToggleKey(key)
-    self:ToggleKey = key
-    self:AddKeybind("Toggle GUI", key, nil, true)
-end
-
-function HiveLib:Toggle()
-    if not self.Gui or not self.Gui.ScreenGui then return end
-    
-    self.Toggled = not self.Toggled
-    self.Gui.ScreenGui.Enabled = self.Toggled
-end
-
-function HiveLib:Show()
-    if self.Gui and self.Gui.ScreenGui then
-        self.Gui.ScreenGui.Enabled = true
-    end
-end
-
-function HiveLib:Hide()
-    if self.Gui and self.Gui.ScreenGui then
-        self.Gui.ScreenGui.Enabled = false
-    end
 end
 
 function HiveLib:Destroy()
