@@ -13,14 +13,12 @@ local Main = GUI:CreateSector("Main")
 local Settings = GUI:CreateSector("Settings")
 local Features = GUI:CreateSector("Features")
 
--- Sections for Main tab
-local welcomeSection = GUI:CreateSection("Welcome")
-welcomeSection:CreateLabel("Welcome to Hive GUI!")
-welcomeSection:CreateLabel("Press Right Shift to toggle")
-welcomeSection:CreateLabel("Click tabs above to switch")
+-- Create sections on Main tab
+Main:CreateSection("Welcome"):CreateLabel("Welcome to Hive GUI!")
+Main:CreateSection("Welcome"):CreateLabel("Press Right Shift to toggle")
+Main:CreateSection("Welcome"):CreateLabel("Click tabs above to switch")
 
-local buttonSection = GUI:CreateSection("Button Example")
-buttonSection:CreateButton("Notify", function()
+Main:CreateSection("Buttons"):CreateButton("Notify", function()
     game.StarterGui:SetCore("SendNotification", {
         Title = "Hive GUI";
         Text = "Button clicked!";
@@ -28,23 +26,21 @@ buttonSection:CreateButton("Notify", function()
     })
 end)
 
--- Switch to Features tab
-Features:CreateSection("Feature Toggles")
-GUI:CreateToggle("Example Toggle", false, function(state)
+-- Create sections on Features tab
+Features:CreateSection("Feature Toggles"):CreateToggle("Example Toggle", false, function(state)
     print("Toggle state:", state)
 end)
 
-GUI:CreateToggle("Another Toggle", true, function(state)
+Features:CreateSection("Feature Toggles"):CreateToggle("Another Toggle", true, function(state)
     print("Another toggle:", state)
 end)
 
--- Switch to Settings tab
-Settings:CreateSection("Settings")
-GUI:CreateSlider("Volume", 0, 100, 50, function(value)
+-- Create sections on Settings tab
+Settings:CreateSection("Settings"):CreateSlider("Volume", 0, 100, 50, function(value)
     print("Volume:", value)
 end)
 
-GUI:CreateSlider("Sensitivity", 0, 10, 5, function(value)
+Settings:CreateSection("Settings"):CreateSlider("Sensitivity", 0, 10, 5, function(value)
     print("Sensitivity:", value)
 end)
 
