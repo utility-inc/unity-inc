@@ -27,7 +27,6 @@ Toggles:CreateToggle("Example Toggle", false, function(state)
     print("Toggle state:", state)
 end)  
 Toggles:CreateLabel("")
-Toggles:CreateLabel("")
 
 local Sliders = GUI:CreateSection("Sliders")
 Sliders:CreateLabel("Example Slider")
