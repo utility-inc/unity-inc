@@ -503,10 +503,7 @@ function Hive:CreateSector(name, icon)
 	
 	table.insert(self.Sectors, sector)
 	
-	if #self.Sectors == 1 then
-		self.ActiveSector = sector
-	end
-	
+	self.ActiveSector = sector
 	self:UpdateTabSize()
 	
 	return sector
