@@ -30,6 +30,20 @@ function HiveLib.new()
 end
 
 function HiveLib:CreateGui()
+    if not self.Theme then
+        self.Theme = {
+            Background = Color3.fromRGB(30, 30, 30),
+            Secondary = Color3.fromRGB(40, 40, 40),
+            Accent = Color3.fromRGB(0, 120, 255),
+            Text = Color3.fromRGB(255, 255, 255),
+            TextSecondary = Color3.fromRGB(180, 180, 180),
+            Border = Color3.fromRGB(60, 60, 60),
+            Success = Color3.fromRGB(0, 200, 100),
+            Warning = Color3.fromRGB(255, 180, 0),
+            Error = Color3.fromRGB(255, 50, 50)
+        }
+    end
+    
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "HiveLib"
     screenGui.ResetOnSpawn = false
