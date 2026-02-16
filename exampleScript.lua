@@ -11,6 +11,7 @@ game.StarterGui:SetCore("SendNotification", {
 local Main = GUI:CreateSection("Welcome")
 Main:CreateLabel("Welcome to Hive GUI!")
 Main:CreateLabel("Press Right Shift to toggle")
+Main:CreateLabel("")
 
 local Button = GUI:CreateSection("Button Example")
 Button:CreateButton("Notify", function()
@@ -25,6 +26,8 @@ local Toggles = GUI:CreateSection("Toggles")
 Toggles:CreateToggle("Example Toggle", false, function(state)
     print("Toggle state:", state)
 end)
+Toggles:bel("")
+Main:CreateLabel("")
 
 local Sliders = GUI:CreateSection("Sliders")
 Sliders:CreateLabel("Example Slider")

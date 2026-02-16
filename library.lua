@@ -8,7 +8,6 @@ local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local Workspace = game:GetService("Workspace")
 
 local OriginalAttributes = {}
 
@@ -51,11 +50,11 @@ local ScriptFolder = nil
 
 local function GetRootFolder()
 	if not RootFolder or not RootFolder.Parent then
-		RootFolder = Workspace:FindFirstChild("Hive_gui")
+		RootFolder = game.Workspace:FindFirstChild("Hive_gui")
 		if not RootFolder then
 			RootFolder = Instance.new("Folder")
 			RootFolder.Name = "Hive_gui"
-			RootFolder.Parent = Workspace
+			RootFolder.Parent = game.Workspace
 		end
 	end
 	return RootFolder
