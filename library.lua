@@ -511,12 +511,14 @@ function Hive:CreateSection(name)
 			LayoutOrder = #section.Components + 1,
 		})
 		
-		local toggleBg = CreateInstance("Frame", {
+		local toggleBg = CreateInstance("TextButton", {
 			Name = "ToggleBg",
 			BackgroundColor3 = actualState and THEME.Accent or THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 40, 0, 20),
 			Position = UDim2.new(1, -50, 0.5, 0),
+			Text = "",
+			AutoLocalize = false,
 		})
 		
 		local toggleKnob = CreateInstance("Frame", {
@@ -584,7 +586,7 @@ function Hive:CreateSection(name)
 			callback(state)
 		end
 		
-		toggleFrame.MouseButton1Click:Connect(function()
+		toggleBg.MouseButton1Click:Connect(function()
 			if not waitingForKey then
 				updateToggle(not state)
 			end
