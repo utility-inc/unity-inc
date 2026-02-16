@@ -295,6 +295,8 @@ function Hive:CreateGUI()
 		ScrollBarThickness = 0,
 		ScrollBarImageColor3 = THEME.Accent,
 		BorderSizePixel = 0,
+		ClipsDescendants = false,
+		CanvasSize = UDim2.new(0, 0, 0, 0),
 	})
 	
 	local tabList = CreateInstance("UIListLayout", {
@@ -548,7 +550,7 @@ end
 function Hive:UpdateTabSize()
 	local tabWidth = 0
 	for _, s in ipairs(self.Sectors) do
-		tabWidth = tabWidth + s.TabButton.TextBounds.X + 20
+		tabWidth = tabWidth + s.TabButton.AbsoluteSize.X + 6
 	end
 	self.TabScroll.CanvasSize = UDim2.new(0, tabWidth, 0, 0)
 end
