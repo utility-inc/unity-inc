@@ -417,7 +417,7 @@ function Hive:CreateSection(name)
 			BackgroundColor3 = THEME.Text,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 16, 0, 16),
-			Position = defaultState and UDim2.new(0, 22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
+			Position = defaultState and UDim2.new(0, 22, 0.5, 2) or UDim2.new(0, 2, 0.5, 2),
 		})
 		
 		local label = CreateInstance("TextLabel", {
@@ -452,7 +452,7 @@ function Hive:CreateSection(name)
 			state = newState
 			toggleBg.BackgroundColor3 = state and THEME.Accent or THEME.Border
 			
-			local targetPos = state and UDim2.new(0, 22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+			local targetPos = state and UDim2.new(0, 22, 0.5, 2) or UDim2.new(0, 2, 0.5, 2)
 			toggleKnob.Position = targetPos
 			
 			callback(state)
