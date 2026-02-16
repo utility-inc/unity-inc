@@ -6,7 +6,6 @@ local GUI = Hive.new("Example")
 local Main = GUI:CreateSection("Welcome")
 Main:CreateLabel("Welcome to Hive GUI!")
 Main:CreateLabel("Press Right Shift to toggle")
-Main:CreateLabel("Drag the title bar to move")
 
 local Button = GUI:CreateSection("Button Example")
 Button:CreateButton("Notify", function()
@@ -31,4 +30,4 @@ GUI:BindKey(Enum.KeyCode.V, function()
     GUI:Toggle()
 end)
 
-print("Hive GUI loaded! Press Right Shift to open.")
+print("Example gui loaded press right shift to open gui")
