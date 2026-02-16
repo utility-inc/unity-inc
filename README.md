@@ -1,6 +1,6 @@
 # Hive GUI Library
 
-A Roblox Lua GUI library inspired by Hive server aesthetics with draggable windows and a modular component system.
+A Roblox Lua GUI library inspired by Hive server aesthetics with draggable windows and a modular component system. Designed for executors.
 
 ## Features
 
@@ -9,28 +9,19 @@ A Roblox Lua GUI library inspired by Hive server aesthetics with draggable windo
 - **Custom Key System** - Enable custom keybinds for your features
 - **Hive Theme** - Blue accent colors matching Hive server style
 - **Built-in Components** - Labels, Buttons, Toggles, Sliders, Inputs
+- **Re-execution Safety** - Automatically cleans up old GUI on re-execute
+- **Attribute Tracking** - Track and restore player attributes
 
 ## Installation
 
-### For Executors (Synapse X, Fluxus, etc.)
-
 ```lua
 local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/libery.lua"))()
-
-local GUI = Hive.new()
--- Continue below...
 ```
-
-### For Roblox Studio
-
-1. Copy `libery.lua` to your Roblox project
-2. Add a ModuleScript in ReplicatedStorage
-3. Paste the contents of `libery.lua` into it
 
 ## Usage
 
 ```lua
-local Hive = require(path.to.libery)
+local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/libery.lua"))()
 
 local GUI = Hive.new()
 
@@ -60,6 +51,8 @@ end)
 GUI:BindKey(Enum.KeyCode.V, function()
     print("V key pressed!")
 end)
+
+GUI:SetAttribute("Speed", 50)
 ```
 
 ## API Reference
@@ -115,6 +108,14 @@ Removes a keybind.
 #### GUI:SetToggleKey(key)
 Changes the toggle key (default: RightShift).
 
+### Attributes
+
+#### GUI:SetAttribute(name, value)
+Sets a player attribute and tracks it for restoration on re-execution.
+
+#### GUI:GetAttribute(name)
+Gets a player attribute value.
+
 ## Controls
 
 - **Right Shift** - Toggle GUI visibility
@@ -129,4 +130,4 @@ Changes the toggle key (default: RightShift).
 
 ## Version
 
-v1.0.0
+v1.0.1
