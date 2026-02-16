@@ -49,6 +49,7 @@ function Hive:CreateGUI()
 		ResetOnSpawn = false,
 		IgnoreGuiInset = true,
 		DisplayOrder = 9999,
+		Enabled = false,
 	})
 	screenGui.Parent = PlayerGui
 	
@@ -236,7 +237,7 @@ function Hive:CreateSection(name)
 		Name = "Section_" .. name,
 		BackgroundColor3 = THEME.Secondary,
 		BorderSizePixel = 0,
-		Size = UDim2.new(1, 0, 0, 40),
+		Size = UDim2.new(1, 0, 0, 30),
 		LayoutOrder = #self.Components + 1,
 	})
 	
@@ -244,7 +245,7 @@ function Hive:CreateSection(name)
 		Name = "Label",
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 10, 0, 0),
-		Size = UDim2.new(1, -20, 1, 0),
+		Size = UDim2.new(1, -20, 0, 30),
 		Text = name,
 		TextColor3 = THEME.Text,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -261,12 +262,36 @@ function Hive:CreateSection(name)
 		Position = UDim2.new(0, 0, 0.5, 0),
 	})
 	
+	local contentFrame = CreateInstance("Frame", {
+		Name = "Content",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 0, 0, 30),
+		Size = UDim2.new(1, 0, 1, -30),
+	})
+	
+	local listLayout = CreateInstance("UIListLayout", {
+		Name = "ListLayout",
+		Padding = UDim.new(0, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	})
+	
+	local padding = CreateInstance("UIPadding", {
+		Name = "Padding",
+		PaddingTop = UDim.new(0, 5),
+		PaddingLeft = UDim.new(0, 10),
+		PaddingRight = UDim.new(0, 10),
+	})
+	
+	listLayout.Parent = contentFrame
+	padding.Parent = contentFrame
 	sectionLabel.Parent = sectionFrame
 	highlight.Parent = sectionFrame
+	contentFrame.Parent = sectionFrame
 	sectionFrame.Parent = self.ScrollFrame
 	
 	local section = {
 		Frame = sectionFrame,
+		Content = contentFrame,
 		Name = name,
 	}
 	
@@ -279,10 +304,12 @@ function Hive:CreateSection(name)
 			TextXAlignment = Enum.TextXAlignment.Left,
 			Font = Enum.Font.Gotham,
 			TextSize = 12,
-			Size = UDim2.new(1, -20, 0, 20),
-			Position = UDim2.new(0, 10, 0, 0),
-			Parent = sectionFrame,
+			Size = UDim2.new(1, 0, 0, 20),
+			LayoutOrder = #section.Components + 1,
 		})
+		label.Parent = contentFrame
+		table.insert(self.Components, label)
+		self:UpdateLayout()
 		return label
 	end
 	
@@ -291,12 +318,12 @@ function Hive:CreateSection(name)
 			Name = "Button",
 			BackgroundColor3 = THEME.Accent,
 			BorderSizePixel = 0,
-			Size = UDim2.new(1, -20, 0, 30),
+			Size = UDim2.new(1, 0, 0, 30),
 			Text = text,
 			TextColor3 = THEME.Text,
 			Font = Enum.Font.GothamBold,
 			TextSize = 14,
-			Parent = sectionFrame,
+			LayoutOrder = #section.Components + 1,
 		})
 		
 		local corner = CreateInstance("UICorner", {
@@ -308,6 +335,9 @@ function Hive:CreateSection(name)
 			callback()
 		end)
 		
+		button.Parent = contentFrame
+		table.insert(self.Components, button)
+		self:UpdateLayout()
 		return button
 	end
 	
@@ -315,8 +345,8 @@ function Hive:CreateSection(name)
 		local toggleFrame = CreateInstance("Frame", {
 			Name = "Toggle",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -20, 0, 30),
-			Parent = sectionFrame,
+			Size = UDim2.new(1, 0, 0, 30),
+			LayoutOrder = #section.Components + 1,
 		})
 		
 		local toggleBg = CreateInstance("Frame", {
@@ -389,6 +419,10 @@ function Hive:CreateSection(name)
 			end
 		end)
 		
+		toggleFrame.Parent = contentFrame
+		table.insert(self.Components, toggleFrame)
+		self:UpdateLayout()
+		
 		return {
 			Frame = toggleFrame,
 			Set = updateToggle,
@@ -400,8 +434,8 @@ function Hive:CreateSection(name)
 		local sliderFrame = CreateInstance("Frame", {
 			Name = "Slider",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -20, 0, 50),
-			Parent = sectionFrame,
+			Size = UDim2.new(1, 0, 0, 50),
+			LayoutOrder = #section.Components + 1,
 		})
 		
 		local label = CreateInstance("TextLabel", {
@@ -517,6 +551,10 @@ function Hive:CreateSection(name)
 		
 		updateSlider((default - min) / (max - min))
 		
+		sliderFrame.Parent = contentFrame
+		table.insert(self.Components, sliderFrame)
+		self:UpdateLayout()
+		
 		return {
 			Frame = sliderFrame,
 			Set = function(val) updateSlider((val - min) / (max - min)) end,
@@ -528,8 +566,8 @@ function Hive:CreateSection(name)
 		local inputFrame = CreateInstance("Frame", {
 			Name = "Input",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -20, 0, 40),
-			Parent = sectionFrame,
+			Size = UDim2.new(1, 0, 0, 40),
+			LayoutOrder = #section.Components + 1,
 		})
 		
 		local textBox = CreateInstance("TextBox", {
@@ -564,12 +602,27 @@ function Hive:CreateSection(name)
 			end
 		end)
 		
+		inputFrame.Parent = contentFrame
+		table.insert(self.Components, inputFrame)
+		self:UpdateLayout()
+		
 		return {
 			Frame = inputFrame,
 			GetText = function() return textBox.Text end,
 			SetText = function(t) textBox.Text = t end,
 		}
 	end
+	
+	function section:UpdateLayout()
+		local contentSize = listLayout.AbsoluteContentSize
+		contentFrame.Size = UDim2.new(1, 0, 0, contentSize.Y)
+		sectionFrame.Size = UDim2.new(1, 0, 0, 30 + contentSize.Y)
+		pcall(function()
+			Hive.UpdateCanvasSize(self)
+		end)
+	end
+	
+	section.Components = {}
 	
 	table.insert(self.Components, sectionFrame)
 	self:UpdateCanvasSize()
