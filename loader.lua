@@ -1,50 +1,62 @@
---[[
-    HiveLib Loader
-    Loadstring: loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/HiveLib.lua"))()
-    
-    Or use the example below:
-]]
-
 local HiveLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/HiveLib.lua"))()
 
--- Create the GUI
-local gui = HiveLib:CreateGui()
+local lib = HiveLib.new()
 
--- Set toggle key (Press ESC to toggle GUI)
-HiveLib:SetToggleKey(Enum.KeyCode.Escape)
+lib.Theme.Accent = Color3.fromRGB(0, 200, 120)
 
--- Add custom keybind
-HiveLib:AddKeybind("Print Hello", Enum.KeyCode.H, function()
-    print("Hello! Keybind pressed.")
+local gui = lib:CreateGui()
+
+lib:SetToggleKey(Enum.KeyCode.Escape)
+
+lib:AddSection("Information")
+
+lib:AddLabel("HiveLib v1.0.0 loaded!")
+
+lib:AddButton("Show Notification", function()
+    lib:Notification("HiveLib", "Welcome to HiveLib!", 5)
 end)
 
--- Add components
-HiveLib:AddSection("Example")
+lib:AddSeparator()
 
-HiveLib:AddButton("Hello World", function()
-    HiveLib:Notification("Hello", "You clicked the button!", 3)
+lib:AddSection("Features")
+
+local speedToggle = lib:AddToggle("Speed Boost", false, function(state)
+    if state then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 32
+    else
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+    end
 end)
 
-HiveLib:AddToggle("Example Toggle", false, function(state)
-    print("Toggle is now:", state)
+local jumpToggle = lib:AddToggle("High Jump", false, function(state)
+    if state then
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
+    else
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+    end
 end)
 
-HiveLib:AddSlider("Example Slider", 0, 100, 50, function(value)
-    print("Slider value:", value)
+local healthToggle = lib:AddSeparator()
+
+lib:AddSlider("Jump Power", 50, 300, 50, function(value)
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character.Humanoid then
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+    end
 end)
 
-HiveLib:AddTextBox("Example Input", "Enter text...", function(text)
-    print("Input:", text)
+lib:AddTextBox("Custom Message", "Enter text...", function(text)
+    lib:Notification("Message", text, 3)
 end)
 
-HiveLib:AddLabel("This is a label")
+lib:AddSeparator()
 
-HiveLib:AddSeparator()
-
-HiveLib:AddButton("Show Notification", function()
-    HiveLib:Notification("Success!", "Everything is working!", 5)
+lib:AddButton("Reset Character", function()
+    game.Players.LocalPlayer.Character:BreakJoints()
 end)
 
--- Show initial notification
+lib:AddButton("Destroy GUI", function()
+    lib:Destroy()
+end)
+
 task.wait(1)
-HiveLib:Notification("HiveLib Loaded", "Press ESC to toggle GUI. Press H for keybind test.", 5)
+lib:Notification("HiveLib", "Press ESC to toggle GUI", 5)
