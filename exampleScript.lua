@@ -24,6 +24,6 @@ end)
 GUI:EnableKeySystem()
 GUI:BindKey(Enum.KeyCode.V, function()
     GUI:Toggle()
-end)
+end)z
 
 print("Hive GUI loaded! Press Right Shift to open.")

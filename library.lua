@@ -400,7 +400,7 @@ function Hive:CreateSection(name)
 		local toggleFrame = CreateInstance("Frame", {
 			Name = "Toggle",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, 0, 0, 30),
+			Size = UDim2.new(1, 0, 0, 35),
 			LayoutOrder = #section.Components + 1,
 		})
 		
