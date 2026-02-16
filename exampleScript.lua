@@ -1,7 +1,12 @@
--- Script Name: Example
 local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/library.lua"))()
 
 local GUI = Hive.new("Example")
+
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Hive GUI";
+    Text = "Script loaded";
+    Duration = 2;
+})
 
 local Main = GUI:CreateSection("Welcome")
 Main:CreateLabel("Welcome to Hive GUI!")
