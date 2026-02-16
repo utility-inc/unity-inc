@@ -10,8 +10,8 @@ game.StarterGui:SetCore("SendNotification", {
 
 -- Create sectors (tabs)
 local Main = GUI:CreateSector("Main")
-local Settings = GUI:CreateSector("Settings", "S")
-local Features = GUI:CreateSector("Features", "F")
+local Settings = GUI:CreateSector("Settings")
+local Features = GUI:CreateSector("Features")
 
 -- Sections for Main tab
 local welcomeSection = GUI:CreateSection("Welcome")
