@@ -284,29 +284,10 @@ function HiveLib:AddSlider(name, min, max, default, callback)
     fillCorner.CornerRadius = UDim.new(0, 4)
     fillCorner.Parent = sliderFill
     
+    local inputService = game:GetService("UserInputService")
     local isDragging = false
     
-    sliderBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = true
-            self:UpdateSlider(input.Position.X)
-        end
-    end)
-    
-    sliderBg.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = false
-        end
-    end)
-    
-    inputService = game:GetService("UserInputService")
-    inputService.InputChanged:Connect(function(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            self:UpdateSlider(input.Position.X)
-        end
-    end)
-    
-    function self:UpdateSlider(xPos)
+    local function updateSlider(xPos)
         local sliderPos = sliderBg.AbsolutePosition.X
         local sliderWidth = sliderBg.AbsoluteSize.X
         local percent = math.clamp((xPos - sliderPos) / sliderWidth, 0, 1)
@@ -317,6 +298,25 @@ function HiveLib:AddSlider(name, min, max, default, callback)
         
         if callback then callback(value) end
     end
+    
+    sliderBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+            updateSlider(input.Position.X)
+        end
+    end)
+    
+    sliderBg.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
+    
+    inputService.InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateSlider(input.Position.X)
+        end
+    end)
     
     return {
         Value = function() return tonumber(label.Text:match("%d+$")) or default end
