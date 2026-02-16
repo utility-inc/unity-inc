@@ -34,6 +34,12 @@ local function Cleanup()
 	if ExistingGUI and ExistingGUI.Parent then
 		ExistingGUI:Destroy()
 	end
+	
+	local oldGui = PlayerGui:FindFirstChild("HiveGUI")
+	if oldGui then
+		oldGui:Destroy()
+	end
+	
 	ExistingGUI = nil
 	
 	for attr, value in pairs(OriginalAttributes) do
