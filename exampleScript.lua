@@ -3,9 +3,9 @@ local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-
 local GUI = Hive.new("Example")
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "Hive GUI";
-    Text = "Script loaded";
-    Duration = 2;
+    Title = "⚡ Hive GUI";
+    Text = "Loaded successfully | Press RightShift";
+    Duration = 3;
 })
 
 local Main = GUI:CreateSection("Welcome")
