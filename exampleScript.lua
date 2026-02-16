@@ -22,12 +22,14 @@ Button:CreateButton("Notify", function()
 end)
 
 local Toggles = GUI:CreateSection("Toggles")
-local ExampleToggle = Toggles:CreateToggle(false, function(state)
+Toggles:CreateToggle("Example Toggle", false, function(state)
+    print("Toggle state:", state)
 end)
 
 local Sliders = GUI:CreateSection("Sliders")
 Sliders:CreateLabel("Example Slider")
-local ExampleSlider = Sliders:CreateSlider(0, 100, 50, function(value)
+Sliders:CreateSlider("Volume", 0, 100, 50, function(value)
+    print("Volume:", value)
 end)
 
 GUI:EnableKeySystem()

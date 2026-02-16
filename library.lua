@@ -4,11 +4,11 @@ Hive.__index = Hive
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local Workspace = game:GetService("Workspace")
 
 local OriginalAttributes = {}
 
@@ -46,29 +46,41 @@ local function Cleanup()
 	OriginalAttributes = {}
 end
 
-local DataFolder = nil
+local RootFolder = nil
 local ScriptFolder = nil
 
-local function GetDataFolder()
-	if not DataFolder then
-		DataFolder = PlayerGui:FindFirstChild("HiveData")
-		if not DataFolder then
-			DataFolder = Instance.new("Folder")
-			DataFolder.Name = "HiveData"
-			DataFolder.Parent = PlayerGui
+local function GetRootFolder()
+	if not RootFolder or not RootFolder.Parent then
+		RootFolder = Workspace:FindFirstChild("Hive_gui")
+		if not RootFolder then
+			RootFolder = Instance.new("Folder")
+			RootFolder.Name = "Hive_gui"
+			RootFolder.Parent = Workspace
 		end
 	end
-	return DataFolder
+	return RootFolder
 end
 
 local function GetScriptFolder(scriptName)
-	if not ScriptFolder then
-		local df = GetDataFolder()
-		ScriptFolder = df:FindFirstChild(scriptName)
+	if not ScriptFolder or not ScriptFolder.Parent or ScriptFolder.Name ~= scriptName then
+		local root = GetRootFolder()
+		ScriptFolder = root:FindFirstChild(scriptName)
 		if not ScriptFolder then
 			ScriptFolder = Instance.new("Folder")
 			ScriptFolder.Name = scriptName
-			ScriptFolder.Parent = df
+			ScriptFolder.Parent = root
+		end
+		
+		if not ScriptFolder:FindFirstChild("config") then
+			local config = Instance.new("Folder")
+			config.Name = "config"
+			config.Parent = ScriptFolder
+		end
+		
+		if not ScriptFolder:FindFirstChild("flags") then
+			local flags = Instance.new("Folder")
+			flags.Name = "flags"
+			flags.Parent = ScriptFolder
 		end
 	end
 	return ScriptFolder
@@ -89,12 +101,108 @@ function Hive.new(scriptName)
 	self.Components = {}
 	self.ToggleKey = Enum.KeyCode.RightShift
 	self.ScriptName = scriptName or "Default"
-	self.DataFolder = GetScriptFolder(self.ScriptName)
+	self.ScriptFolder = GetScriptFolder(self.ScriptName)
 	
-	self:LoadData()
+	self:LoadSavedData()
 	self:CreateGUI()
 	
 	return self
+end
+
+function Hive:LoadSavedData()
+	local config = self.ScriptFolder:FindFirstChild("config")
+	local flags = self.ScriptFolder:FindFirstChild("flags")
+	
+	if config then
+		for _, child in ipairs(config:GetChildren()) do
+			if child:IsA("StringValue") then
+				local key = child.Name
+				local value = child.Value
+				
+				if value == "true" then
+					self.SavedConfig = self.SavedConfig or {}
+					self.SavedConfig[key] = true
+				elseif value == "false" then
+					self.SavedConfig = self.SavedConfig or {}
+					self.SavedConfig[key] = false
+				elseif tonumber(value) then
+					self.SavedConfig = self.SavedConfig or {}
+					self.SavedConfig[key] = tonumber(value)
+				else
+					self.SavedConfig = self.SavedConfig or {}
+					self.SavedConfig[key] = value
+				end
+			end
+		end
+	end
+	
+	if flags then
+		for _, child in ipairs(flags:GetChildren()) do
+			if child:IsA("StringValue") then
+				local key = child.Name
+				local value = child.Value
+				
+				if value == "true" then
+					self.SavedFlags = self.SavedFlags or {}
+					self.SavedFlags[key] = true
+				elseif value == "false" then
+					self.SavedFlags = self.SavedFlags or {}
+					self.SavedFlags[key] = false
+				elseif tonumber(value) then
+					self.SavedFlags = self.SavedFlags or {}
+					self.SavedFlags[key] = tonumber(value)
+				else
+					self.SavedFlags = self.SavedFlags or {}
+					self.SavedFlags[key] = value
+				end
+			end
+		end
+	end
+	
+	self.SavedConfig = self.SavedConfig or {}
+	self.SavedFlags = self.SavedFlags or {}
+end
+
+function Hive:SaveConfig(key, value)
+	self.SavedConfig[key] = value
+	
+	local config = self.ScriptFolder:FindFirstChild("config")
+	if config then
+		local existing = config:FindFirstChild(key)
+		if existing then
+			existing:Destroy()
+		end
+		
+		local stringValue = Instance.new("StringValue")
+		stringValue.Name = key
+		stringValue.Value = tostring(value)
+		stringValue.Parent = config
+	end
+end
+
+function Hive:LoadConfig(key)
+	return self.SavedConfig and self.SavedConfig[key]
+end
+
+function Hive:SaveFlag(key, value)
+	self.SavedFlags[key] = value
+	
+	local flags = self.ScriptFolder:FindFirstChild("flags")
+	if flags then
+		local existing = flags:FindFirstChild(key)
+		if existing then
+			existing:Destroy()
+		end
+		
+		local stringValue = Instance.new("StringValue")
+		stringValue.Name = key
+		stringValue.Value = tostring(value)
+		stringValue.Parent = flags
+	end
+end
+
+function Hive:LoadFlag(key)
+	return self.SavedFlags and self.SavedFlags[key]
 end
 
 function Hive:CreateGUI()
@@ -145,7 +253,7 @@ function Hive:CreateGUI()
 		Position = UDim2.new(1, -10, 0, 0),
 		Size = UDim2.new(0, 200, 1, 0),
 		AnchorPoint = Vector2.new(1, 0),
-		Text = "v1.0.0",
+		Text = "v1.1.0",
 		TextColor3 = THEME.TextSecondary,
 		TextXAlignment = Enum.TextXAlignment.Right,
 		Font = Enum.Font.Gotham,
@@ -191,7 +299,6 @@ function Hive:CreateGUI()
 	
 	mainFrame.Parent = screenGui
 	
-	ExistingGUI = screenGui
 	self.GUI = screenGui
 	self.MainFrame = mainFrame
 	self.TitleBar = titleBar
@@ -209,11 +316,7 @@ function Hive:MakeDraggable()
 	
 	local inputBegan = function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			local mousePos = UserInputService:GetMouseLocation()
-			local guiPos = self.MainFrame.AbsolutePosition
-			local offset = mousePos - guiPos
-			
-			if input.Position.Y - guiPos.Y < 35 then
+			if input.Position.Y - self.MainFrame.AbsolutePosition.Y < 35 then
 				dragging = true
 				dragStart = input.Position
 				startPos = self.MainFrame.Position
@@ -348,6 +451,7 @@ function Hive:CreateSection(name)
 		Frame = sectionFrame,
 		Content = contentFrame,
 		Name = name,
+		Parent = self,
 	}
 	
 	function section:CreateLabel(text)
@@ -396,7 +500,11 @@ function Hive:CreateSection(name)
 		return button
 	end
 	
-	function section:CreateToggle(defaultState, callback)
+	function section:CreateToggle(name, defaultState, callback)
+		local toggleName = name or "Toggle"
+		local savedState = self.Parent:LoadFlag(toggleName)
+		local actualState = savedState ~= nil and savedState or defaultState
+		
 		local toggleFrame = CreateInstance("Frame", {
 			Name = "Toggle",
 			BackgroundTransparency = 1,
@@ -406,7 +514,7 @@ function Hive:CreateSection(name)
 		
 		local toggleBg = CreateInstance("Frame", {
 			Name = "ToggleBg",
-			BackgroundColor3 = defaultState and THEME.Accent or THEME.Border,
+			BackgroundColor3 = actualState and THEME.Accent or THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 40, 0, 20),
 			Position = UDim2.new(1, -50, 0.5, 0),
@@ -418,14 +526,14 @@ function Hive:CreateSection(name)
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 16, 0, 16),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = defaultState and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
+			Position = actualState and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
 		})
 		
 		local label = CreateInstance("TextLabel", {
 			Name = "Label",
 			BackgroundTransparency = 1,
 			Size = UDim2.new(1, -60, 1, 0),
-			Text = "Toggle",
+			Text = toggleName,
 			TextColor3 = THEME.Text,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			Font = Enum.Font.Gotham,
@@ -442,12 +550,29 @@ function Hive:CreateSection(name)
 		})
 		knobCorner.Parent = toggleKnob
 		
-		toggleBg.Parent = toggleFrame
-		toggleKnob.Parent = toggleBg
-		label.Parent = toggleFrame
+		local keybindBtn = CreateInstance("TextButton", {
+			Name = "KeybindBtn",
+			BackgroundColor3 = THEME.Border,
+			BorderSizePixel = 0,
+			Size = UDim2.new(0, 50, 0, 20),
+			Text = "None",
+			TextColor3 = THEME.TextSecondary,
+			Font = Enum.Font.Gotham,
+			TextSize = 10,
+		})
 		
-		local state = defaultState
-		local enabled = false
+		local keybindCorner = CreateInstance("UICorner", {
+			CornerRadius = UDim.new(0, 4),
+		})
+		keybindCorner.Parent = keybindBtn
+		
+		local savedKeybind = self.Parent:LoadConfig("Keybind_" .. toggleName)
+		if savedKeybind then
+			keybindBtn.Text = savedKeybind
+		end
+		
+		local state = actualState
+		local waitingForKey = false
 		
 		local function updateToggle(newState)
 			state = newState
@@ -456,21 +581,44 @@ function Hive:CreateSection(name)
 			local targetPos = state and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
 			toggleKnob.Position = targetPos
 			
+			self.Parent:SaveFlag(toggleName, state)
 			callback(state)
 		end
 		
 		toggleFrame.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then
-				enabled = true
-			end
-		end)
-		
-		toggleFrame.InputEnded:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 and enabled then
-				enabled = false
+			if input.UserInputType == Enum.UserInputType.MouseButton1 and not waitingForKey then
 				updateToggle(not state)
 			end
 		end)
+		
+		keybindBtn.MouseButton1Click:Connect(function()
+			waitingForKey = true
+			keybindBtn.Text = "..."
+			keybindBtn.BackgroundColor3 = THEME.Accent
+		end)
+		
+		UserInputService.InputBegan:Connect(function(input, gameProcessed)
+			if waitingForKey and not gameProcessed then
+				local keyName = tostring(input.KeyCode):gsub("Enum.KeyCode.", "")
+				keybindBtn.Text = keyName
+				keybindBtn.BackgroundColor3 = THEME.Border
+				self.Parent:SaveConfig("Keybind_" .. toggleName, keyName)
+				
+				local keyEnum = Enum.KeyCode[keyName]
+				if keyEnum then
+					self.Parent:BindKey(keyEnum, function()
+						updateToggle(not state)
+					end)
+				end
+				
+				waitingForKey = false
+			end
+		end)
+		
+		toggleBg.Parent = toggleFrame
+		toggleKnob.Parent = toggleBg
+		label.Parent = toggleFrame
+		keybindBtn.Parent = toggleFrame
 		
 		toggleFrame.Parent = contentFrame
 		table.insert(self.Components, toggleFrame)
@@ -483,7 +631,11 @@ function Hive:CreateSection(name)
 		}
 	end
 	
-	function section:CreateSlider(min, max, default, callback)
+	function section:CreateSlider(name, min, max, default, callback)
+		local sliderName = name or "Slider"
+		local savedValue = self.Parent:LoadFlag(sliderName)
+		local actualValue = savedValue or default
+		
 		local sliderFrame = CreateInstance("Frame", {
 			Name = "Slider",
 			BackgroundTransparency = 1,
@@ -495,7 +647,7 @@ function Hive:CreateSection(name)
 			Name = "Label",
 			BackgroundTransparency = 1,
 			Size = UDim2.new(1, 0, 0, 20),
-			Text = "Slider",
+			Text = sliderName,
 			TextColor3 = THEME.Text,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			Font = Enum.Font.Gotham,
@@ -508,7 +660,7 @@ function Hive:CreateSection(name)
 			AnchorPoint = Vector2.new(1, 0),
 			Position = UDim2.new(1, 0, 0, 0),
 			Size = UDim2.new(0, 50, 0, 20),
-			Text = tostring(default),
+			Text = tostring(actualValue),
 			TextColor3 = THEME.AccentLight,
 			TextXAlignment = Enum.TextXAlignment.Right,
 			Font = Enum.Font.GothamBold,
@@ -528,7 +680,7 @@ function Hive:CreateSection(name)
 			Name = "SliderFill",
 			BackgroundColor3 = THEME.Accent,
 			BorderSizePixel = 0,
-			Size = UDim2.new(0, 0, 1, 0),
+			Size = UDim2.new(0.5, 0, 1, 0),
 		})
 		
 		local sliderKnob = CreateInstance("Frame", {
@@ -561,7 +713,7 @@ function Hive:CreateSection(name)
 		valueLabel.Parent = sliderFrame
 		sliderBg.Parent = sliderFrame
 		
-		local value = default or min
+		local value = actualValue
 		local dragging = false
 		
 		local function updateSlider(percent)
@@ -573,6 +725,7 @@ function Hive:CreateSection(name)
 			sliderKnob.Position = UDim2.new(percent, 0, 0.5, 0)
 			valueLabel.Text = tostring(newValue)
 			
+			self.Parent:SaveFlag(sliderName, newValue)
 			callback(newValue)
 		end
 		
@@ -602,7 +755,7 @@ function Hive:CreateSection(name)
 			end
 		end)
 		
-		updateSlider((default - min) / (max - min))
+		updateSlider((actualValue - min) / (max - min))
 		
 		sliderFrame.Parent = contentFrame
 		table.insert(self.Components, sliderFrame)
@@ -627,7 +780,7 @@ function Hive:CreateSection(name)
 			Name = "TextBox",
 			BackgroundColor3 = THEME.Border,
 			BorderSizePixel = 0,
-			Size = UDim2.new(1, 0, 0, 34),
+			Size = UDim2.new(1, 0, 0, 30),
 			Text = "",
 			PlaceholderText = placeholder or "Enter text...",
 			PlaceholderColor3 = THEME.TextSecondary,
@@ -671,7 +824,7 @@ function Hive:CreateSection(name)
 		contentFrame.Size = UDim2.new(1, 0, 0, contentSize.Y)
 		sectionFrame.Size = UDim2.new(1, 0, 0, 30 + contentSize.Y)
 		pcall(function()
-			Hive.UpdateCanvasSize(self)
+			Hive.UpdateCanvasSize(self.Parent)
 		end)
 	end
 	
@@ -703,100 +856,10 @@ function Hive:SetToggleKey(key)
 	self.ToggleKey = key
 end
 
-function Hive:SetAttribute(name, value)
-	if OriginalAttributes[name] == nil then
-		OriginalAttributes[name] = LocalPlayer:GetAttribute(name)
-	end
-	LocalPlayer:SetAttribute(name, value)
-end
-
-function Hive:GetAttribute(name)
-	return LocalPlayer:GetAttribute(name)
-end
-
 function Hive:Destroy()
 	if self.GUI then
 		self.GUI:Destroy()
 	end
-end
-
-function Hive:LoadData()
-	if self.DataFolder then
-		for _, child in ipairs(self.DataFolder:GetChildren()) do
-			if child:IsA("StringValue") then
-				local value = child.Value
-				if value == "true" then
-					self.DataStore = self.DataStore or {}
-					self.DataStore[child.Name] = true
-				elseif value == "false" then
-					self.DataStore = self.DataStore or {}
-					self.DataStore[child.Name] = false
-				elseif tonumber(value) then
-					self.DataStore = self.DataStore or {}
-					self.DataStore[child.Name] = tonumber(value)
-				else
-					self.DataStore = self.DataStore or {}
-					self.DataStore[child.Name] = value
-				end
-			end
-		end
-	end
-	self.DataStore = self.DataStore or {}
-end
-
-function Hive:Save(key, value)
-	self.DataStore = self.DataStore or {}
-	self.DataStore[key] = value
-	
-	if self.DataFolder then
-		local existing = self.DataFolder:FindFirstChild(key)
-		if existing then
-			existing:Destroy()
-		end
-		
-		local stringValue = Instance.new("StringValue")
-		stringValue.Name = key
-		stringValue.Value = tostring(value)
-		stringValue.Parent = self.DataFolder
-	end
-end
-
-function Hive:Load(key)
-	return self.DataStore and self.DataStore[key]
-end
-
-function Hive:CreateToggleWithKeybind(defaultState, keybind, callback)
-	local key = tostring(keybind):gsub("Enum.KeyCode.", "")
-	local savedKey = self:Load("ToggleKey_" .. key)
-	
-	local toggleObj = self:CreateToggle(defaultState, function(state)
-		self:Save("ToggleState_" .. key, state)
-		callback(state)
-	end)
-	
-	if keybind then
-		self:BindKey(keybind, function()
-			local newState = not toggleObj:Get()
-			toggleObj:Set(newState)
-		end)
-		
-		local savedKeybind = self:Load("ToggleKeybind_" .. key)
-		if savedKeybind then
-			pcall(function()
-				local keyEnum = Enum.KeyCode[savedKeybind]
-				if keyEnum then
-					self:BindKey(keyEnum, function()
-						local newState = not toggleObj:Get()
-						toggleObj:Set(newState)
-					end)
-				end
-			end)
-		end
-		
-		self:Save("ToggleKeybind_" .. key, key)
-	end
-	
-	return toggleObj
 end
 
 return Hive
