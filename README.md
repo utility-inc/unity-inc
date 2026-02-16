@@ -12,6 +12,7 @@ A Roblox Lua GUI library inspired by Hive server aesthetics with draggable windo
 - **Re-execution Safety** - Automatically cleans up old GUI on re-execute
 - **Data Persistence** - Save and load settings per script
 - **Script Folders** - Each script gets its own folder in HiveData
+- **Sectors/Tabs** - Create multiple tabs to organize your GUI
 
 ## Installation
 
@@ -26,9 +27,14 @@ local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-
 
 local GUI = Hive.new("MyScript")
 
-local Main = GUI:CreateSection("Welcome")
-Main:CreateLabel("Welcome to Hive GUI!")
-Main:CreateLabel("Press Right Shift to toggle")
+-- Create sectors (tabs) - optional, works without them too
+local Main = GUI:CreateSector("Main")
+local Settings = GUI:CreateSector("Settings", "S")  -- "S" is the icon
+
+-- Create sections (works inside sectors or directly on GUI)
+local Welcome = GUI:CreateSection("Welcome")
+Welcome:CreateLabel("Welcome to Hive GUI!")
+Welcome:CreateLabel("Press Right Shift to toggle")
 
 local Button = GUI:CreateSection("Button Example")
 Button:CreateButton("Notify", function()
@@ -36,13 +42,13 @@ Button:CreateButton("Notify", function()
 end)
 
 local Toggles = GUI:CreateSection("Toggles")
-local ExampleToggle = Toggles:CreateToggle(false, function(state)
+Toggles:CreateToggle("Example Toggle", false, function(state)
     -- Toggle action
 end)
 
 local Sliders = GUI:CreateSection("Sliders")
 Sliders:CreateLabel("Example Slider")
-local ExampleSlider = Sliders:CreateSlider(0, 100, 50, function(value)
+Sliders:CreateSlider("Volume", 0, 100, 50, function(value)
     -- Slider action
 end)
 
@@ -58,9 +64,18 @@ end)
 Creates a new Hive GUI instance.
 - `scriptName`: Optional name for the script (creates separate data folder)
 
+### GUI:CreateSector(name, icon)
+Creates a new sector (tab) for organizing content.
+- `name`: The name of the sector displayed on the tab
+- `icon`: Optional icon/text to show before the name (e.g., "S", "F", or emoji)
+- Sectors appear as tabs at the top of the window
+- All sections created after a sector belongs to that sector
+
 ### GUI:CreateSection(name)
 Creates a new section with the given name.
 - Returns a section object with methods to create components
+- If a sector is active, the section is added to that sector
+- Otherwise, the section is added to the main content area
 
 ### Section Methods
 
@@ -70,13 +85,15 @@ Creates a text label.
 #### section:CreateButton(text, callback)
 Creates a clickable button.
 
-#### section:CreateToggle(defaultState, callback)
+#### section:CreateToggle(name, defaultState, callback)
 Creates a toggle switch.
+- `name`: Display name for the toggle
 - `defaultState`: boolean (true/false)
 - `callback(state)`: Called when toggle changes
 
-#### section:CreateSlider(min, max, default, callback)
+#### section:CreateSlider(name, min, max, default, callback)
 Creates a slider.
+- `name`: Display name for the slider
 - `min`: Minimum value
 - `max`: Maximum value  
 - `default`: Starting value
@@ -124,6 +141,7 @@ local value = GUI:Load("MySetting")
 
 - **Right Shift** - Toggle GUI visibility
 - **Title Bar Drag** - Move the GUI window
+- **Tab Click** - Switch between sectors
 
 ## Theme Colors
 
@@ -132,6 +150,21 @@ local value = GUI:Load("MySetting")
 - Accent: RGB(65, 105, 225)
 - Accent Light: RGB(100, 149, 237)
 
+## Configuration
+
+You can customize the library by editing the CONFIG table in library.lua:
+
+```lua
+local CONFIG = {
+    ToggleOffset = 50,    -- Toggle button offset from right
+    ToggleWidth = 40,     -- Toggle width
+    ToggleHeight = 20,     -- Toggle height
+    KnobSize = 16,        -- Toggle knob size
+    TabPosition = "Top",   -- Tab position (Top/Bottom)
+    TabHeight = 40,       -- Tab container height
+}
+```
+
 ## Version
 
-v1.0.3
+v1.2.0

@@ -26,6 +26,8 @@ local CONFIG = {
 	ToggleWidth = 40,
 	ToggleHeight = 20,
 	KnobSize = 16,
+	TabPosition = "Top",
+	TabHeight = 40,
 }
 
 local function CreateInstance(className, properties)
@@ -105,6 +107,8 @@ function Hive.new(scriptName)
 	self.KeySystemEnabled = false
 	self.Keybinds = {}
 	self.Components = {}
+	self.Sectors = {}
+	self.ActiveSector = nil
 	self.ToggleKey = Enum.KeyCode.RightShift
 	self.ScriptName = scriptName or "Default"
 	self.ScriptFolder = GetScriptFolder(self.ScriptName)
@@ -267,11 +271,37 @@ function Hive:CreateGUI()
 		ZIndex = 3,
 	})
 	
+	local tabContainer = CreateInstance("Frame", {
+		Name = "TabContainer",
+		BackgroundColor3 = THEME.Secondary,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, CONFIG.TabHeight),
+		Position = UDim2.new(0, 0, 0, 35),
+		Visible = false,
+	})
+	
+	local tabScroll = CreateInstance("ScrollingFrame", {
+		Name = "TabScroll",
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -10, 1, 0),
+		ScrollBarThickness = 0,
+		ScrollBarImageColor3 = THEME.Accent,
+		BorderSizePixel = 0,
+	})
+	
+	local tabList = CreateInstance("UIListLayout", {
+		Name = "TabList",
+		FillDirection = Enum.FillDirection.Horizontal,
+		Padding = UDim.new(0, 2),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	})
+	
 	local contentFrame = CreateInstance("Frame", {
 		Name = "Content",
 		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 0, 0, 35),
-		Size = UDim2.new(1, 0, 1, -35),
+		Position = UDim2.new(0, 0, 0, 35 + CONFIG.TabHeight),
+		Size = UDim2.new(1, 0, 1, -(35 + CONFIG.TabHeight)),
+		Visible = false,
 	})
 	
 	local scrollFrame = CreateInstance("ScrollingFrame", {
@@ -298,6 +328,9 @@ function Hive:CreateGUI()
 	titleBar.Parent = mainFrame
 	titleLabel.Parent = titleBar
 	versionLabel.Parent = titleBar
+	tabContainer.Parent = mainFrame
+	tabScroll.Parent = tabContainer
+	tabList.Parent = tabScroll
 	contentFrame.Parent = mainFrame
 	scrollFrame.Parent = contentFrame
 	listLayout.Parent = scrollFrame
@@ -308,6 +341,9 @@ function Hive:CreateGUI()
 	self.GUI = screenGui
 	self.MainFrame = mainFrame
 	self.TitleBar = titleBar
+	self.TabContainer = tabContainer
+	self.TabScroll = tabScroll
+	self.ContentFrame = contentFrame
 	self.ScrollFrame = scrollFrame
 	self.ListLayout = listLayout
 	
@@ -391,18 +427,114 @@ function Hive:Hide()
 	self.GUI.Enabled = false
 end
 
+function Hive:CreateSector(name, icon)
+	local sectorName = name or "Sector"
+	local iconValue = icon or ""
+	
+	if #self.Sectors == 0 then
+		self.TabContainer.Visible = true
+		self.ContentFrame.Visible = true
+	end
+	
+	local tabBtn = CreateInstance("TextButton", {
+		Name = "Tab_" .. sectorName,
+		BackgroundColor3 = #self.Sectors == 0 and THEME.Accent or THEME.Border,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 0, 1, -4),
+		AutoButtonColor = false,
+		Text = iconValue .. (iconValue ~= "" and " " or "") .. sectorName,
+		TextColor3 = THEME.Text,
+		Font = Enum.Font.Gotham,
+		TextSize = 12,
+		LayoutOrder = #self.Sectors + 1,
+	})
+	
+	local tabCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 4),
+	})
+	tabCorner.Parent = tabBtn
+	
+	local sectorScrollFrame = CreateInstance("ScrollingFrame", {
+		Name = "Sector_" .. sectorName,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 5, 0, 5),
+		Size = UDim2.new(1, -10, 1, -10),
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = THEME.Accent,
+		BorderSizePixel = 0,
+		Visible = #self.Sectors == 0,
+	})
+	
+	local sectorListLayout = CreateInstance("UIListLayout", {
+		Name = "ListLayout",
+		Padding = UDim.new(0, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	})
+	
+	local sectorPadding = CreateInstance("UIPadding", {
+		Name = "Padding",
+		PaddingTop = UDim.new(0, 5),
+	})
+	
+	sectorListLayout.Parent = sectorScrollFrame
+	sectorPadding.Parent = sectorScrollFrame
+	tabBtn.Parent = self.TabScroll
+	sectorScrollFrame.Parent = self.ContentFrame
+	
+	local sector = {
+		Name = sectorName,
+		TabButton = tabBtn,
+		ScrollFrame = sectorScrollFrame,
+		ListLayout = sectorListLayout,
+		Parent = self,
+		Components = {},
+	}
+	
+	tabBtn.MouseButton1Click:Connect(function()
+		for _, s in ipairs(self.Sectors) do
+			s.ScrollFrame.Visible = false
+			s.TabButton.BackgroundColor3 = THEME.Border
+		end
+		sectorScrollFrame.Visible = true
+		tabBtn.BackgroundColor3 = THEME.Accent
+		self.ActiveSector = sector
+		self:UpdateCanvasSize()
+	end)
+	
+	table.insert(self.Sectors, sector)
+	
+	if #self.Sectors == 1 then
+		self.ActiveSector = sector
+	end
+	
+	self:UpdateTabSize()
+	
+	return sector
+end
+
+function Hive:UpdateTabSize()
+	local tabWidth = 0
+	for _, s in ipairs(self.Sectors) do
+		tabWidth = tabWidth + s.TabButton.TextBounds.X + 20
+	end
+	self.TabScroll.CanvasSize = UDim2.new(0, tabWidth, 0, 0)
+end
+
 function Hive:UpdateCanvasSize()
 	local layoutOrder = self.ListLayout.AbsoluteContentSize
 	self.ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, layoutOrder.Y + 10)
 end
 
 function Hive:CreateSection(name)
+	local targetScrollFrame = self.ActiveSector and self.ActiveSector.ScrollFrame or self.ScrollFrame
+	local targetComponents = self.ActiveSector and self.ActiveSector.Components or self.Components
+	
 	local sectionFrame = CreateInstance("Frame", {
 		Name = "Section_" .. name,
 		BackgroundColor3 = THEME.Secondary,
 		BorderSizePixel = 0,
 		Size = UDim2.new(1, 0, 0, 30),
-		LayoutOrder = #self.Components + 1,
+		LayoutOrder = #targetComponents + 1,
 	})
 	
 	local sectionLabel = CreateInstance("TextLabel", {
@@ -451,7 +583,9 @@ function Hive:CreateSection(name)
 	sectionLabel.Parent = sectionFrame
 	highlight.Parent = sectionFrame
 	contentFrame.Parent = sectionFrame
-	sectionFrame.Parent = self.ScrollFrame
+	sectionFrame.Parent = targetScrollFrame
+	
+	table.insert(targetComponents, sectionFrame)
 	
 	local section = {
 		Frame = sectionFrame,

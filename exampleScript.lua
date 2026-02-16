@@ -3,18 +3,22 @@ local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-
 local GUI = Hive.new("Example")
 
 game.StarterGui:SetCore("SendNotification", {
-    Title = "⚡ Hive GUI";
+    Title = "Hive GUI";
     Text = "Loaded successfully | Press RightShift";
     Duration = 3;
 })
 
-local Main = GUI:CreateSection("Welcome")
-Main:CreateLabel("Welcome to Hive GUI!")
-Main:CreateLabel("Press Right Shift to toggle")
-Main:CreateLabel("")
+local Main = GUI:CreateSector("Main")
+local Settings = GUI:CreateSector("Settings", "S")
+local Features = GUI:CreateSector("Features", "F")
 
-local Button = GUI:CreateSection("Button Example")
-Button:CreateButton("Notify", function()
+local mainSection = GUI:CreateSection("Welcome")
+mainSection:CreateLabel("Welcome to Hive GUI!")
+mainSection:CreateLabel("Press Right Shift to toggle")
+mainSection:CreateLabel("")
+
+local buttonSection = GUI:CreateSection("Button Example")
+buttonSection:CreateButton("Notify", function()
     game.StarterGui:SetCore("SendNotification", {
         Title = "Hive GUI";
         Text = "Button clicked!";
@@ -22,15 +26,13 @@ Button:CreateButton("Notify", function()
     })
 end)
 
-local Toggles = GUI:CreateSection("Toggles")
-Toggles:CreateToggle("Example Toggle", false, function(state)
+GUI:CreateSection("Toggles")
+GUI:CreateToggle("Example Toggle", false, function(state)
     print("Toggle state:", state)
-end)  
-Toggles:CreateLabel("")
+end)
 
-local Sliders = GUI:CreateSection("Sliders")
-Sliders:CreateLabel("Example Slider")
-Sliders:CreateSlider("Volume", 0, 100, 50, function(value)
+GUI:CreateSection("Settings Section")
+GUI:CreateSlider("Volume", 0, 100, 50, function(value)
     print("Volume:", value)
 end)
 
