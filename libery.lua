@@ -507,7 +507,7 @@ function Hive:CreateSection(name)
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 16, 0, 16),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(1, 0, 0.5, 0),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
 		})
 		
 		local corner = CreateInstance("UICorner", {
@@ -539,9 +539,8 @@ function Hive:CreateSection(name)
 			local newValue = math.floor(min + (max - min) * percent)
 			value = newValue
 			
-			local bgWidth = sliderBg.AbsoluteSize.X
-			sliderFill.Size = UDim2.new(0, bgWidth * percent, 1, 0)
-			sliderKnob.Position = UDim2.new(0, bgWidth * percent, 0.5, 0)
+			sliderFill.Size = UDim2.new(percent, 0, 1, 0)
+			sliderKnob.Position = UDim2.new(percent, 0, 0.5, 0)
 			valueLabel.Text = tostring(newValue)
 			
 			callback(newValue)
