@@ -280,6 +280,13 @@ function Hive:CreateGUI()
 		Visible = false,
 	})
 	
+	local tabPadding = CreateInstance("UIPadding", {
+		Name = "TabPadding",
+		PaddingLeft = UDim.new(0, 10),
+		PaddingRight = UDim.new(0, 10),
+		PaddingTop = UDim.new(0, 6),
+	})
+	
 	local tabScroll = CreateInstance("ScrollingFrame", {
 		Name = "TabScroll",
 		BackgroundTransparency = 1,
@@ -292,7 +299,7 @@ function Hive:CreateGUI()
 	local tabList = CreateInstance("UIListLayout", {
 		Name = "TabList",
 		FillDirection = Enum.FillDirection.Horizontal,
-		Padding = UDim.new(0, 2),
+		Padding = UDim.new(0, 8),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	})
 	
@@ -329,6 +336,7 @@ function Hive:CreateGUI()
 	titleLabel.Parent = titleBar
 	versionLabel.Parent = titleBar
 	tabContainer.Parent = mainFrame
+	tabPadding.Parent = tabContainer
 	tabScroll.Parent = tabContainer
 	tabList.Parent = tabScroll
 	contentFrame.Parent = mainFrame
@@ -440,13 +448,12 @@ function Hive:CreateSector(name, icon)
 		Name = "Tab_" .. sectorName,
 		BackgroundColor3 = #self.Sectors == 0 and THEME.Accent or THEME.Border,
 		BorderSizePixel = 0,
-		Size = UDim2.new(0, 0, 1, -4),
-		AutoButtonColor = false,
+		Size = UDim2.new(0, 60, 0, 28),
+		AutoButtonColor = true,
 		Text = iconValue .. (iconValue ~= "" and " " or "") .. sectorName,
 		TextColor3 = THEME.Text,
 		Font = Enum.Font.Gotham,
 		TextSize = 12,
-		LayoutOrder = #self.Sectors + 1,
 	})
 	
 	local tabCorner = CreateInstance("UICorner", {
