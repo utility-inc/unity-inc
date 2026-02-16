@@ -533,7 +533,7 @@ function Hive:CreateSection(name)
 		local label = CreateInstance("TextLabel", {
 			Name = "Label",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -120, 1, 0),
+			Size = UDim2.new(1, -170, 1, 0),
 			Text = toggleName,
 			TextColor3 = THEME.Text,
 			TextXAlignment = Enum.TextXAlignment.Left,
