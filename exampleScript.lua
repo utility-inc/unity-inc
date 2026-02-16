@@ -1,3 +1,4 @@
+-- Script Name: Example
 local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/libery.lua"))()
 
 local GUI = Hive.new()
@@ -32,36 +33,16 @@ end)
 
 local Sliders = GUI:CreateSection("Sliders")
 Sliders:CreateLabel("Example Slider")
-local VolumeSlider = Sliders:CreateSlider(0, 100, 50, function(value)
-end)
-
-
-
-local Inputs = GUI:CreateSection("Inputs")
-Inputs:CreateInput("Enter your name...", function(text)
-    print("Player name:", text)
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Hive GUI";
-        Text = "Name saved: " .. text;
-        Duration = 2;
-    })
+local ExampleSlider = Sliders:CreateSlider(0, 100, 50, function(value)
 end)
 
 GUI:EnableKeySystem()
 GUI:BindKey(Enum.KeyCode.X, function()
-    print("[KeyBind] X pressed!")
     ExampleToggle:Set(not ExampleToggle:Get())
 end)
 
 GUI:BindKey(Enum.KeyCode.V, function()
-    print("[KeyBind] V pressed - Toggling GUI")
     GUI:Toggle()
-end)
-
-GUI:BindKey(Enum.KeyCode.P, function()
-    print("[KeyBind] P pressed - Random volume")
-    local randomVol = math.random(0, 100)
-    VolumeSlider:Set(randomVol)
 end)
 
 print("Hive GUI loaded! Press Right Shift to open.")

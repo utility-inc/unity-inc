@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -45,9 +46,37 @@ local function Cleanup()
 	OriginalAttributes = {}
 end
 
+local DataFolder = nil
+local ScriptFolder = nil
+
+local function GetDataFolder()
+	if not DataFolder then
+		DataFolder = PlayerGui:FindFirstChild("HiveData")
+		if not DataFolder then
+			DataFolder = Instance.new("Folder")
+			DataFolder.Name = "HiveData"
+			DataFolder.Parent = PlayerGui
+		end
+	end
+	return DataFolder
+end
+
+local function GetScriptFolder(scriptName)
+	if not ScriptFolder then
+		local df = GetDataFolder()
+		ScriptFolder = df:FindFirstChild(scriptName)
+		if not ScriptFolder then
+			ScriptFolder = Instance.new("Folder")
+			ScriptFolder.Name = scriptName
+			ScriptFolder.Parent = df
+		end
+	end
+	return ScriptFolder
+end
+
 Cleanup()
 
-function Hive.new()
+function Hive.new(scriptName)
 	Cleanup()
 	
 	local self = setmetatable({}, Hive)
@@ -59,7 +88,10 @@ function Hive.new()
 	self.Keybinds = {}
 	self.Components = {}
 	self.ToggleKey = Enum.KeyCode.RightShift
+	self.ScriptName = scriptName or "Default"
+	self.DataFolder = GetScriptFolder(self.ScriptName)
 	
+	self:LoadData()
 	self:CreateGUI()
 	
 	return self
@@ -80,8 +112,8 @@ function Hive:CreateGUI()
 		BackgroundColor3 = THEME.Background,
 		BorderColor3 = THEME.Border,
 		BorderSizePixel = 1,
-		Position = UDim2.new(0.5, -250, 0.5, -250),
-		Size = UDim2.new(0, 550, 0, 500),
+		Position = UDim2.new(0.5, -225, 0.5, -225),
+		Size = UDim2.new(0, 450, 0, 450),
 		ClipsDescendants = true,
 		Draggable = false,
 	})
@@ -377,8 +409,8 @@ function Hive:CreateSection(name)
 			BackgroundColor3 = defaultState and THEME.Accent or THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 40, 0, 20),
-			AnchorPoint = Vector2.new(0, 0.5),
-			Position = UDim2.new(1, 0, 0.5, 0),
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -10, 0.5, 0),
 		})
 		
 		local toggleKnob = CreateInstance("Frame", {
@@ -387,7 +419,7 @@ function Hive:CreateSection(name)
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 16, 0, 16),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(defaultState and 1 or 0, defaultState and -24 or 8, 0.5, 0),
+			Position = UDim2.new(0, -10, 0.5, 0),
 		})
 		
 		local label = CreateInstance("TextLabel", {
@@ -422,7 +454,7 @@ function Hive:CreateSection(name)
 			state = newState
 			toggleBg.BackgroundColor3 = state and THEME.Accent or THEME.Border
 			
-			local targetPos = state and UDim2.new(1, -24, 0.5, 0) or UDim2.new(0, 8, 0.5, 0)
+			local targetPos = state and UDim2.new(1, -26, 0.5, 0) or UDim2.new(0, -10, 0.5, 0)
 			local tween = TweenService:Create(toggleKnob, TweenInfo.new(0.15), {Position = targetPos})
 			tween:Play()
 			
@@ -688,6 +720,85 @@ function Hive:Destroy()
 	if self.GUI then
 		self.GUI:Destroy()
 	end
+end
+
+function Hive:LoadData()
+	if self.DataFolder then
+		for _, child in ipairs(self.DataFolder:GetChildren()) do
+			if child:IsA("StringValue") then
+				local value = child.Value
+				if value == "true" then
+					self.DataStore = self.DataStore or {}
+					self.DataStore[child.Name] = true
+				elseif value == "false" then
+					self.DataStore = self.DataStore or {}
+					self.DataStore[child.Name] = false
+				elseif tonumber(value) then
+					self.DataStore = self.DataStore or {}
+					self.DataStore[child.Name] = tonumber(value)
+				else
+					self.DataStore = self.DataStore or {}
+					self.DataStore[child.Name] = value
+				end
+			end
+		end
+	end
+	self.DataStore = self.DataStore or {}
+end
+
+function Hive:Save(key, value)
+	self.DataStore = self.DataStore or {}
+	self.DataStore[key] = value
+	
+	if self.DataFolder then
+		local existing = self.DataFolder:FindFirstChild(key)
+		if existing then
+			existing:Destroy()
+		end
+		
+		local stringValue = Instance.new("StringValue")
+		stringValue.Name = key
+		stringValue.Value = tostring(value)
+		stringValue.Parent = self.DataFolder
+	end
+end
+
+function Hive:Load(key)
+	return self.DataStore and self.DataStore[key]
+end
+
+function Hive:CreateToggleWithKeybind(defaultState, keybind, callback)
+	local key = tostring(keybind):gsub("Enum.KeyCode.", "")
+	local savedKey = self:Load("ToggleKey_" .. key)
+	
+	local toggleObj = self:CreateToggle(defaultState, function(state)
+		self:Save("ToggleState_" .. key, state)
+		callback(state)
+	end)
+	
+	if keybind then
+		self:BindKey(keybind, function()
+			local newState = not toggleObj:Get()
+			toggleObj:Set(newState)
+		end)
+		
+		local savedKeybind = self:Load("ToggleKeybind_" .. key)
+		if savedKeybind then
+			pcall(function()
+				local keyEnum = Enum.KeyCode[savedKeybind]
+				if keyEnum then
+					self:BindKey(keyEnum, function()
+						local newState = not toggleObj:Get()
+						toggleObj:Set(newState)
+					end)
+				end
+			end)
+		end
+		
+		self:Save("ToggleKeybind_" .. key, key)
+	end
+	
+	return toggleObj
 end
 
 return Hive
