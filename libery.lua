@@ -453,8 +453,7 @@ function Hive:CreateSection(name)
 			toggleBg.BackgroundColor3 = state and THEME.Accent or THEME.Border
 			
 			local targetPos = state and UDim2.new(0, 22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
-			local tween = TweenService:Create(toggleKnob, TweenInfo.new(0.15), {Position = targetPos})
-			tween:Play()
+			toggleKnob.Position = targetPos
 			
 			callback(state)
 		end
