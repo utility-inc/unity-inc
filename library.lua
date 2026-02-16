@@ -584,7 +584,7 @@ function Hive:CreateSection(name)
 			callback(state)
 		end
 		
-		toggleFrame.MouseButton1Click:Connect(function()
+		toggleBg.MouseButton1Click:Connect(function()
 			if not waitingForKey then
 				updateToggle(not state)
 			end
