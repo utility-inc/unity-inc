@@ -1,130 +1,132 @@
-# HiveLib
+# Hive GUI Library
 
-A legitimate Roblox utility library for creating custom GUIs.
+A Roblox Lua GUI library inspired by Hive server aesthetics with draggable windows and a modular component system.
 
 ## Features
 
-- Draggable window
-- Customizable buttons, toggles, sliders, text boxes
-- Keybind system (toggle GUI + custom keybinds)
-- Notification system
-- Theme support (dark mode by default)
-- Section headers and separators
+- **Draggable Window** - Click and drag the title bar to move the GUI
+- **Right Shift Toggle** - Press Right Shift to show/hide the GUI
+- **Custom Key System** - Enable custom keybinds for your features
+- **Hive Theme** - Blue accent colors matching Hive server style
+- **Built-in Components** - Labels, Buttons, Toggles, Sliders, Inputs
+
+## Installation
+
+### For Executors (Synapse X, Fluxus, etc.)
+
+```lua
+local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/libery.lua"))()
+
+local GUI = Hive.new()
+-- Continue below...
+```
+
+### For Roblox Studio
+
+1. Copy `libery.lua` to your Roblox project
+2. Add a ModuleScript in ReplicatedStorage
+3. Paste the contents of `libery.lua` into it
 
 ## Usage
 
-### Loadstring
-
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/HiveLib.lua"))()
-```
+local Hive = require(path.to.libery)
 
-### Full Example
+local GUI = Hive.new()
 
-```lua
-local HiveLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/HiveLib.lua"))()
-
--- Create the GUI
-local gui = HiveLib:CreateGui()
-
--- Set toggle key (Press ESC to toggle GUI)
-HiveLib:SetToggleKey(Enum.KeyCode.Escape)
-
--- Add custom keybind
-HiveLib:AddKeybind("Print Hello", Enum.KeyCode.H, function()
-    print("Hello! Keybind pressed.")
+local Main = GUI:CreateSection("Main")
+Main:CreateLabel("Welcome to Hive!")
+Main:CreateButton("Click Me", function()
+    print("Button clicked!")
 end)
 
--- Add components
-HiveLib:AddButton("Click Me", function()
-    HiveLib:Notification("Hello", "You clicked the button!", 3)
+Main:CreateToggle(false, function(state)
+    print("Toggle:", state)
 end)
 
-HiveLib:AddToggle("Enable Feature", false, function(state)
-    print("Feature enabled:", state)
+Main:CreateSlider(0, 100, 50, function(value)
+    print("Slider value:", value)
 end)
 
-HiveLib:AddSlider("Volume", 0, 100, 50, function(value)
-    print("Volume:", value)
+Main:CreateInput("Enter name...", function(text)
+    print("Input:", text)
 end)
 
-HiveLib:AddTextBox("Name", "Enter name...", function(text)
-    print("Name:", text)
+GUI:EnableKeySystem()
+GUI:BindKey(Enum.KeyCode.X, function()
+    print("X key pressed!")
 end)
 
-HiveLib:AddLabel("This is a label")
-
-HiveLib:AddSeparator()
-
-HiveLib:AddSection("More Options")
-
-HiveLib:AddButton("Another Button", function()
-    print("Button clicked")
+GUI:BindKey(Enum.KeyCode.V, function()
+    print("V key pressed!")
 end)
 ```
 
 ## API Reference
 
-### Core Functions
+### Hive.new()
+Creates a new Hive GUI instance.
 
-| Function | Description |
-|----------|-------------|
-| `HiveLib.new()` | Create a new HiveLib instance |
-| `HiveLib:CreateGui()` | Create the main GUI window |
-| `HiveLib:Show()` | Show the GUI |
-| `HiveLib:Hide()` | Hide the GUI |
-| `HiveLib:Toggle()` | Toggle GUI visibility |
-| `HiveLib:Destroy()` | Destroy the GUI |
+### GUI:CreateSection(name)
+Creates a new section with the given name.
+- Returns a section object with methods to create components
 
-### Keybinds
+### Section Methods
 
-| Function | Description |
-|----------|-------------|
-| `HiveLib:SetToggleKey(key)` | Set key to toggle GUI visibility |
-| `HiveLib:AddKeybind(name, key, callback, toggleGui)` | Add a custom keybind |
-| `HiveLib:RemoveKeybind(name)` | Remove a keybind by name |
+#### section:CreateLabel(text)
+Creates a text label.
 
-### Components
+#### section:CreateButton(text, callback)
+Creates a clickable button.
 
-| Function | Description |
-|----------|-------------|
-| `HiveLib:AddButton(name, callback)` | Add a clickable button |
-| `HiveLib:AddToggle(name, default, callback)` | Add a toggle switch |
-| `HiveLib:AddSlider(name, min, max, default, callback)` | Add a slider |
-| `HiveLib:AddTextBox(name, placeholder, callback)` | Add a text input |
-| `HiveLib:AddLabel(text)` | Add a text label |
-| `HiveLib:AddSeparator()` | Add a horizontal separator |
-| `HiveLib:AddSection(title)` | Add a section header |
+#### section:CreateToggle(defaultState, callback)
+Creates a toggle switch.
+- `defaultState`: boolean (true/false)
+- `callback(state)`: Called when toggle changes
 
-### Notifications
+#### section:CreateSlider(min, max, default, callback)
+Creates a slider.
+- `min`: Minimum value
+- `max`: Maximum value  
+- `default`: Starting value
+- `callback(value)`: Called when slider value changes
 
-| Function | Description |
-|----------|-------------|
-| `HiveLib:Notification(title, text, duration)` | Show a notification |
+#### section:CreateInput(placeholder, callback)
+Creates a text input box.
+- `placeholder`: Placeholder text
+- `callback(text)`: Called when user presses Enter
 
-## Theme Customization
+### Key System
 
-You can customize the theme colors when creating a new instance:
+#### GUI:EnableKeySystem()
+Enables custom keybinds.
 
+#### GUI:BindKey(key, callback)
+Binds a key to a callback.
 ```lua
-local lib = HiveLib.new()
-lib.Theme.Background = Color3.fromRGB(20, 20, 20)
-lib.Theme.Accent = Color3.fromRGB(255, 100, 100)
--- etc.
+GUI:BindKey(Enum.KeyCode.X, function()
+    print("X pressed!")
+end)
 ```
 
-## Available Theme Colors
+#### GUI:UnbindKey(key)
+Removes a keybind.
 
-- `Background` - Main background color
-- `Secondary` - Secondary/button backgrounds
-- `Accent` - Primary accent color
-- `Text` - Main text color
-- `TextSecondary` - Secondary text color
-- `Border` - Border color
-- `Success` - Success/ON state color
-- `Warning` - Warning color
-- `Error` - Error/close button color
+#### GUI:SetToggleKey(key)
+Changes the toggle key (default: RightShift).
 
-## License
+## Controls
 
-MIT License
+- **Right Shift** - Toggle GUI visibility
+- **Title Bar Drag** - Move the GUI window
+
+## Theme Colors
+
+- Background: RGB(25, 25, 35)
+- Secondary: RGB(35, 35, 50)
+- Accent: RGB(65, 105, 225)
+- Accent Light: RGB(100, 149, 237)
+
+## Version
+
+v1.0.0
