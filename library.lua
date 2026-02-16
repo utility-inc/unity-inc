@@ -519,6 +519,7 @@ function Hive:CreateSection(name)
 			Position = UDim2.new(1, -50, 0.5, 0),
 			Text = "",
 			AutoLocalize = false,
+			ZIndex = 2,
 		})
 		
 		local toggleKnob = CreateInstance("Frame", {
@@ -528,6 +529,7 @@ function Hive:CreateSection(name)
 			Size = UDim2.new(0, 16, 0, 16),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = actualState and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
+			ZIndex = 2,
 		})
 		
 		local label = CreateInstance("TextLabel", {
