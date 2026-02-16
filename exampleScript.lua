@@ -21,9 +21,14 @@ local Toggles = GUI:CreateSection("Toggles")
 local ExampleToggle = Toggles:CreateToggle(false, function(state)
 end)
 
+local Sliders = GUI:CreateSection("Sliders")
+Sliders:CreateLabel("Example Slider")
+local ExampleSlider = Sliders:CreateSlider(0, 100, 50, function(value)
+end)
+
 GUI:EnableKeySystem()
 GUI:BindKey(Enum.KeyCode.V, function()
     GUI:Toggle()
-end)z
+end)
 
 print("Hive GUI loaded! Press Right Shift to open.")
