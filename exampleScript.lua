@@ -31,15 +31,11 @@ local ExampleToggle = Toggles:CreateToggle(false, function(state)
 end)
 
 local Sliders = GUI:CreateSection("Sliders")
-Sliders:CreateLabel("Volume Slider")
+Sliders:CreateLabel("Example Slider")
 local VolumeSlider = Sliders:CreateSlider(0, 100, 50, function(value)
-    print("Volume set to:", value)
 end)
 
-Sliders:CreateLabel("Sensitivity Slider")
-local SensSlider = Sliders:CreateSlider(1, 100, 50, function(value)
-    print("Sensitivity set to:", value)
-end)
+
 
 local Inputs = GUI:CreateSection("Inputs")
 Inputs:CreateInput("Enter your name...", function(text)
