@@ -516,7 +516,7 @@ function Hive:CreateSection(name)
 			BackgroundColor3 = actualState and THEME.Accent or THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 40, 0, 20),
-			Position = UDim2.new(1, -55, 0.5, 0),
+			Position = UDim2.new(1, -60, 0.5, 0),
 			Text = "",
 			AutoLocalize = false,
 		})
@@ -533,7 +533,7 @@ function Hive:CreateSection(name)
 		local label = CreateInstance("TextLabel", {
 			Name = "Label",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -110, 1, 0),
+			Size = UDim2.new(1, -100, 1, 0),
 			Text = toggleName,
 			TextColor3 = THEME.Text,
 			TextXAlignment = Enum.TextXAlignment.Left,
@@ -556,7 +556,7 @@ function Hive:CreateSection(name)
 			BackgroundColor3 = THEME.Border,
 			BorderSizePixel = 0,
 			Size = UDim2.new(0, 50, 0, 20),
-			Position = UDim2.new(1, -100, 0.5, 0),
+			Position = UDim2.new(1, -5, 0.5, 0),
 			Text = "None",
 			TextColor3 = THEME.TextSecondary,
 			Font = Enum.Font.Gotham,
