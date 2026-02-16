@@ -141,7 +141,7 @@ function HiveLib:SetupDraggable(frame, dragArea)
         end
     end)
     
-    inputService = game:GetService("UserInputService")
+    local inputService = game:GetService("UserInputService")
     inputService.InputChanged:Connect(function(input)
         if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
