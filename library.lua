@@ -449,7 +449,7 @@ function Hive:CreateSector(name, icon)
 		Name = "Tab_" .. sectorName,
 		BackgroundColor3 = #self.Sectors == 0 and THEME.Accent or THEME.Secondary,
 		BorderSizePixel = 0,
-		Size = UDim2.new(0, 0, 0, 30),
+		Size = UDim2.new(0, 100, 0, 35),
 		AutoButtonColor = false,
 		Text = iconValue .. (iconValue ~= "" and " " or "") .. sectorName,
 		TextColor3 = THEME.Text,
@@ -457,7 +457,9 @@ function Hive:CreateSector(name, icon)
 		TextSize = 12,
 	})
 	
-	tabBtn.Size = UDim2.new(0, tabBtn.TextBounds.X + 30, 0, 35)
+	tabBtn.Parent = self.TabScroll
+	task.wait()
+	tabBtn.Size = UDim2.new(0, tabBtn.TextBounds.X + 32, 0, 35)
 	
 	local tabStroke = CreateInstance("UIStroke", {
 		Name = "TabStroke",
@@ -501,7 +503,6 @@ function Hive:CreateSector(name, icon)
 	
 	sectorListLayout.Parent = sectorScrollFrame
 	sectorPadding.Parent = sectorScrollFrame
-	tabBtn.Parent = self.TabScroll
 	sectorScrollFrame.Parent = self.ContentFrame
 	
 	local sector = {
