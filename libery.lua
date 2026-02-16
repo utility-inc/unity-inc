@@ -9,7 +9,6 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local ExistingGUI = nil
 local OriginalAttributes = {}
 
 local THEME = {
@@ -31,16 +30,10 @@ local function CreateInstance(className, properties)
 end
 
 local function Cleanup()
-	if ExistingGUI and ExistingGUI.Parent then
-		ExistingGUI:Destroy()
-	end
-	
 	local oldGui = PlayerGui:FindFirstChild("HiveGUI")
 	if oldGui then
 		oldGui:Destroy()
 	end
-	
-	ExistingGUI = nil
 	
 	for attr, value in pairs(OriginalAttributes) do
 		if value == nil then
@@ -51,6 +44,8 @@ local function Cleanup()
 	end
 	OriginalAttributes = {}
 end
+
+Cleanup()
 
 function Hive.new()
 	Cleanup()
@@ -85,7 +80,7 @@ function Hive:CreateGUI()
 		BackgroundColor3 = THEME.Background,
 		BorderColor3 = THEME.Border,
 		BorderSizePixel = 1,
-		Position = UDim2.new(0, 10, 0, 10),
+		Position = UDim2.new(0.5, -200, 0.5, -250),
 		Size = UDim2.new(0, 400, 0, 500),
 		ClipsDescendants = true,
 		Draggable = false,
