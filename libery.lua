@@ -9,6 +9,9 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
+local ExistingGUI = nil
+local OriginalAttributes = {}
+
 local THEME = {
 	Background = Color3.fromRGB(25, 25, 35),
 	Secondary = Color3.fromRGB(35, 35, 50),
@@ -27,7 +30,25 @@ local function CreateInstance(className, properties)
 	return instance
 end
 
+local function Cleanup()
+	if ExistingGUI and ExistingGUI.Parent then
+		ExistingGUI:Destroy()
+	end
+	ExistingGUI = nil
+	
+	for attr, value in pairs(OriginalAttributes) do
+		if value == nil then
+			LocalPlayer:SetAttribute(attr, nil)
+		else
+			LocalPlayer:SetAttribute(attr, value)
+		end
+	end
+	OriginalAttributes = {}
+end
+
 function Hive.new()
+	Cleanup()
+	
 	local self = setmetatable({}, Hive)
 	
 	self.GUI = nil
@@ -137,6 +158,7 @@ function Hive:CreateGUI()
 	
 	mainFrame.Parent = screenGui
 	
+	ExistingGUI = screenGui
 	self.GUI = screenGui
 	self.MainFrame = mainFrame
 	self.TitleBar = titleBar
@@ -648,6 +670,17 @@ end
 
 function Hive:SetToggleKey(key)
 	self.ToggleKey = key
+end
+
+function Hive:SetAttribute(name, value)
+	if OriginalAttributes[name] == nil then
+		OriginalAttributes[name] = LocalPlayer:GetAttribute(name)
+	end
+	LocalPlayer:SetAttribute(name, value)
+end
+
+function Hive:GetAttribute(name)
+	return LocalPlayer:GetAttribute(name)
 end
 
 function Hive:Destroy()
