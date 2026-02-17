@@ -817,13 +817,19 @@ function Hive:Dropdown(name, config, callback)
 	executeCorner.Parent = executeButton
 	
 	local function updateOptionsHeight()
-		local height = #options * 30 + 10
-		optionsFrame.Size = UDim2.new(1, 0, 0, height)
+		local optionsHeight = #options * 30 + 10
+		optionsFrame.Size = UDim2.new(1, 0, 0, optionsHeight)
 		
+		local totalHeight = 35 + optionsHeight
 		if mode == "manual" then
-			height = height + 35
+			totalHeight = totalHeight + 35
 		end
-		dropdownContainer.Size = UDim2.new(1, 0, 0, 35 + height)
+		
+		if isExpanded then
+			dropdownContainer.Size = UDim2.new(1, 0, 0, totalHeight)
+		else
+			dropdownContainer.Size = UDim2.new(1, 0, 0, 35)
+		end
 	end
 	
 	local function selectOption(option)
@@ -837,6 +843,7 @@ function Hive:Dropdown(name, config, callback)
 			callback(option)
 		end
 		
+		updateOptionsHeight()
 		task.delay(0.05, function()
 			self:UpdateCanvasSize()
 		end)
@@ -845,6 +852,7 @@ function Hive:Dropdown(name, config, callback)
 	local function toggleDropdown()
 		isExpanded = not isExpanded
 		optionsFrame.Visible = isExpanded
+		updateOptionsHeight()
 		if isExpanded then
 			dropdownButton.Text = name .. ": " .. currentValue .. " ▲"
 		else
