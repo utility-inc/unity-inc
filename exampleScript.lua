@@ -1,9 +1,6 @@
 local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-inc/unity-inc/main/library.lua"))()
 
 local GUI = Hive.new("Example")
-local ToggleKey = Enum.KeyCode.RightShift
-
-GUI:SetToggleKey(ToggleKey)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -90,7 +87,7 @@ end
 GUI:Tab("Main", function()
     GUI:Section("Welcome", function()
         GUI:Label("Welcome to Hive GUI example!")
-        GUI:Label("Press " .. tostring(ToggleKey.Name) .. " to toggle gui")
+        GUI:Label("Use GUI Keybind toggle to show/hide")
         GUI:Button("Example button", function()
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Screen Message";
@@ -125,9 +122,9 @@ GUI:Tab("Settings", function()
             save = true,
         }, function(state)
             if state then
-                GUI:SetToggleKey(Enum.KeyCode.RightShift)
+                GUI:Show()
             else
-                GUI:SetToggleKey(nil)
+                GUI:Hide()
             end
         end)
         
