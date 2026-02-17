@@ -621,6 +621,7 @@ end
 
 function Hive:CreateToggle(name, config, callback)
 	if not self.CurrentSection then return end
+	if not name or name == "" then return end
 	
 	config = config or {}
 	
