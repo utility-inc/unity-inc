@@ -516,7 +516,6 @@ function Hive:Section(name, callback)
 		Name = "ListLayout",
 		Padding = UDim.new(0, 8),
 		SortOrder = Enum.SortOrder.LayoutOrder,
-		AutomaticSize = Enum.AutomaticSize.Y,
 	})
 	
 	local sectionPadding = CreateInstance("UIPadding", {
