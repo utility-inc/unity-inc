@@ -483,7 +483,7 @@ function Hive:CreateTab(name)
 				Size = UDim2.new(1, 0, 0, 20),
 			})
 			label.Parent = sectionContent
-			self.Parent.Parent.Parent:UpdateCanvasSize()
+			self.Parent.Parent:UpdateCanvasSize()
 			return label
 		end
 		
@@ -509,7 +509,7 @@ function Hive:CreateTab(name)
 			end)
 			
 			button.Parent = sectionContent
-			self.Parent.Parent.Parent:UpdateCanvasSize()
+			self.Parent.Parent:UpdateCanvasSize()
 			return button
 		end
 		
