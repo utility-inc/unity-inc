@@ -6,6 +6,27 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
+local UserInputService = game:GetService("UserInputService")
+
+local GUIKeybind = Enum.KeyCode.RightShift
+
+local function toggleGUI()
+    GUI:Toggle()
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    local savedKeybind = GUI:Load("GUI Keybind_Keybind")
+    if savedKeybind then
+        GUIKeybind = Enum.KeyCode[savedKeybind]
+    end
+    
+    if input.KeyCode == GUIKeybind then
+        toggleGUI()
+    end
+end)
+
 local InfiniteJumpConnection = nil
 
 local function enableInfiniteJump()
@@ -115,6 +136,19 @@ GUI:Tab("Settings", function()
     end)
     
     GUI:Section("UI Configuration", function()
+        GUI:CreateToggle("GUI Keybind", {
+            keybind = GUIKeybind,
+            save = true,
+        })
+        
+        local function loadKeybind()
+            local savedKey = GUI:Load("GUIKeybind")
+            if savedKey then
+                GUIKeybind = Enum.KeyCode[savedKey]
+            end
+        end
+        loadKeybind()
+        
         GUI:Button("Unload Script", function()
             GUI:Destroy()
             pcall(function()
