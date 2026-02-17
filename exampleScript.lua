@@ -119,18 +119,6 @@ GUI:Tab("Settings", function()
     end)
     
     GUI:Section("UI Configuration", function()
-        GUI:CreateToggle("GUI Keybind", {
-            default = true,
-            keybind = Enum.KeyCode.RightShift,
-            save = true,
-        }, function(state)
-            if state then
-                GUI:SetToggleKey(Enum.KeyCode.RightShift)
-            else
-                GUI:SetToggleKey(nil)
-            end
-        end)
-        
         GUI:Button("Unload Script", function()
             GUI:Destroy()
             pcall(function()
