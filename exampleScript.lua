@@ -10,24 +10,28 @@ local UserInputService = game:GetService("UserInputService")
 
 local GUIKeybind = Enum.KeyCode.RightShift
 local guiToggle = nil
+local keybindLoaded = false
 
 local function toggleGUI()
     GUI:Toggle()
 end
 
+local function loadKeybind()
+    if keybindLoaded then return end
+    local savedKey = GUI:Load("GUIKeybind")
+    if savedKey then
+        GUIKeybind = Enum.KeyCode[savedKey] or GUIKeybind
+    end
+    keybindLoaded = true
+end
+
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
-    local savedKeybind = GUI:Load("GUI Keybind_Keybind")
-    if savedKeybind then
-        GUIKeybind = Enum.KeyCode[savedKeybind]
-    end
+    loadKeybind()
     
     if input.KeyCode == GUIKeybind then
         toggleGUI()
-        if guiToggle then
-            guiToggle.SetValue(GUI.Visible)
-        end
     end
 end)
 
@@ -140,27 +144,13 @@ GUI:Tab("Settings", function()
     end)
     
     GUI:Section("UI Configuration", function()
-        local guiToggle = GUI:CreateToggle("GUI Keybind", {
+        guiToggle = GUI:CreateToggle("GUI Keybind", {
             keybind = GUIKeybind,
             default = true,
             save = true,
-        }, function(isOn)
-            if isOn then
-                GUI:Show()
-            else
-                GUI:Hide()
-            end
-        end)
+        })
         
-        local function loadKeybind()
-            local savedKey = GUI:Load("GUIKeybind")
-            if savedKey then
-                GUIKeybind = Enum.KeyCode[savedKey]
-            end
-        end
         loadKeybind()
-        
-        GUI:Toggle()
         
         GUI:Button("Unload Script", function()
             GUI:Destroy()
@@ -170,5 +160,3 @@ GUI:Tab("Settings", function()
         end)
     end)
 end)
-
-GUI:Toggle()
