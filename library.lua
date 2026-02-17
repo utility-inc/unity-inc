@@ -1,6 +1,9 @@
 local Hive = {}
 Hive.__index = Hive
 
+local HiveTab = {}
+HiveTab.__index = HiveTab
+
 local Services = {}
 Services.Players = game:GetService("Players")
 Services.TweenService = game:GetService("TweenService")
@@ -181,27 +184,6 @@ function Hive:CreateGUI()
 		Visible = false,
 	})
 	
-	local scrollFrame = CreateInstance("ScrollingFrame", {
-		Name = "ScrollFrame",
-		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 5, 0, 5),
-		Size = UDim2.new(1, -10, 1, -10),
-		ScrollBarThickness = 4,
-		ScrollBarImageColor3 = THEME.Accent,
-		BorderSizePixel = 0,
-	})
-	
-	local listLayout = CreateInstance("UIListLayout", {
-		Name = "ListLayout",
-		Padding = UDim.new(0, 8),
-		SortOrder = Enum.SortOrder.LayoutOrder,
-	})
-	
-	local padding = CreateInstance("UIPadding", {
-		Name = "Padding",
-		PaddingTop = UDim.new(0, 5),
-	})
-	
 	titleBar.Parent = mainFrame
 	titleLabel.Parent = titleBar
 	versionLabel.Parent = titleBar
@@ -210,9 +192,6 @@ function Hive:CreateGUI()
 	tabScroll.Parent = tabContainer
 	tabList.Parent = tabScroll
 	contentFrame.Parent = mainFrame
-	scrollFrame.Parent = contentFrame
-	listLayout.Parent = scrollFrame
-	padding.Parent = scrollFrame
 	
 	mainFrame.Parent = screenGui
 	
@@ -222,8 +201,7 @@ function Hive:CreateGUI()
 	self.TabContainer = tabContainer
 	self.TabScroll = tabScroll
 	self.ContentFrame = contentFrame
-	self.ScrollFrame = scrollFrame
-	self.ListLayout = listLayout
+	self.Tabs = {}
 	
 	self:MakeDraggable()
 	self:SetupToggleKey()
@@ -312,6 +290,262 @@ function Hive:Destroy()
 	if self.GUI then
 		self.GUI:Destroy()
 	end
+end
+
+function Hive:UpdateTabSize()
+	local tabWidth = 0
+	for _, tab in ipairs(self.Tabs) do
+		tabWidth = tabWidth + tab.Button.AbsoluteSize.X + 6
+	end
+	self.TabScroll.CanvasSize = UDim2.new(0, tabWidth, 0, 0)
+end
+
+function Hive:SwitchTab(tab)
+	for _, t in ipairs(self.Tabs) do
+		t.Content.Visible = false
+		t.Button.BackgroundColor3 = THEME.Secondary
+	end
+	tab.Content.Visible = true
+	tab.Button.BackgroundColor3 = THEME.Accent
+	self.ActiveTab = tab
+	self:UpdateCanvasSize()
+end
+
+function Hive:UpdateCanvasSize()
+	if self.ActiveTab and self.ActiveTab.ListLayout then
+		local contentSize = self.ActiveTab.ListLayout.AbsoluteContentSize
+		self.ActiveTab.ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 10)
+	end
+end
+
+function Hive.tab:new(name)
+	local self = setmetatable({}, HiveTab)
+	
+	self.Name = name
+	self.Parent = nil
+	self.Sections = {}
+	
+	return self
+end
+
+function Hive:CreateTab(name)
+	if #self.Tabs == 0 then
+		self.TabContainer.Visible = true
+		self.ContentFrame.Visible = true
+	end
+	
+	local tabButton = CreateInstance("TextButton", {
+		Name = "Tab_" .. name,
+		BackgroundColor3 = #self.Tabs == 0 and THEME.Accent or THEME.Secondary,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 80, 0, 35),
+		AutoButtonColor = false,
+		Text = name,
+		TextColor3 = THEME.Text,
+		Font = Enum.Font.Gotham,
+		TextSize = 12,
+	})
+	
+	local tabStroke = CreateInstance("UIStroke", {
+		Name = "TabStroke",
+		Color = THEME.Border,
+		Thickness = 1,
+	})
+	tabStroke.Parent = tabButton
+	
+	local tabCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 6),
+	})
+	tabCorner.Parent = tabButton
+	
+	local tabPadding = CreateInstance("UIPadding", {
+		PaddingLeft = UDim.new(0, 12),
+		PaddingRight = UDim.new(0, 12),
+	})
+	tabPadding.Parent = tabButton
+	
+	task.wait()
+	tabButton.Size = UDim2.new(0, tabButton.TextBounds.X + 24, 0, 35)
+	
+	local tabScroll = CreateInstance("ScrollingFrame", {
+		Name = "Content_" .. name,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 5, 0, 5),
+		Size = UDim2.new(1, -10, 1, -10),
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = THEME.Accent,
+		BorderSizePixel = 0,
+		Visible = #self.Tabs == 0,
+	})
+	
+	local listLayout = CreateInstance("UIListLayout", {
+		Name = "ListLayout",
+		Padding = UDim.new(0, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	})
+	
+	local padding = CreateInstance("UIPadding", {
+		Name = "Padding",
+		PaddingTop = UDim.new(0, 5),
+	})
+	
+	listLayout.Parent = tabScroll
+	padding.Parent = tabScroll
+	tabScroll.Parent = self.ContentFrame
+	
+	local tab = {
+		Name = name,
+		Button = tabButton,
+		Content = tabScroll,
+		ScrollFrame = tabScroll,
+		ListLayout = listLayout,
+		Parent = self,
+		Sections = {},
+	}
+	
+	function tab:CreateSection(sectionName)
+		local sectionFrame = CreateInstance("Frame", {
+			Name = "Section_" .. sectionName,
+			BackgroundColor3 = THEME.Secondary,
+			BorderSizePixel = 0,
+			Size = UDim2.new(1, 0, 0, 30),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = #self.Sections + 1,
+		})
+		
+		local sectionLabel = CreateInstance("TextLabel", {
+			Name = "Label",
+			BackgroundTransparency = 1,
+			Position = UDim2.new(0, 10, 0, 0),
+			Size = UDim2.new(1, -20, 0, 30),
+			Text = sectionName,
+			TextColor3 = THEME.Text,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Font = Enum.Font.GothamBold,
+			TextSize = 14,
+		})
+		
+		local highlight = CreateInstance("Frame", {
+			Name = "Highlight",
+			BackgroundColor3 = THEME.Accent,
+			BorderSizePixel = 0,
+			Size = UDim2.new(0, 3, 1, 0),
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 0, 0.5, 0),
+		})
+		
+		local sectionContent = CreateInstance("Frame", {
+			Name = "Content",
+			BackgroundTransparency = 1,
+			Position = UDim2.new(0, 0, 0, 30),
+			Size = UDim2.new(1, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+		})
+		
+		local sectionList = CreateInstance("UIListLayout", {
+			Name = "ListLayout",
+			Padding = UDim.new(0, 8),
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			AutomaticSize = Enum.AutomaticSize.Y,
+		})
+		
+		local sectionPadding = CreateInstance("UIPadding", {
+			Name = "Padding",
+			PaddingTop = UDim.new(0, 5),
+			PaddingLeft = UDim.new(0, 10),
+			PaddingRight = UDim.new(0, 10),
+			PaddingBottom = UDim.new(0, 5),
+		})
+		
+		sectionList.Parent = sectionContent
+		sectionPadding.Parent = sectionContent
+		sectionLabel.Parent = sectionFrame
+		highlight.Parent = sectionFrame
+		sectionContent.Parent = sectionFrame
+		sectionFrame.Parent = tabScroll
+		
+		local section = {
+			Frame = sectionFrame,
+			Content = sectionContent,
+			Name = sectionName,
+			Parent = tab,
+		}
+		
+		function section:CreateLabel(text)
+			local label = CreateInstance("TextLabel", {
+				Name = "Label",
+				BackgroundTransparency = 1,
+				Text = text,
+				TextColor3 = THEME.TextSecondary,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				Font = Enum.Font.Gotham,
+				TextSize = 14,
+				Size = UDim2.new(1, 0, 0, 20),
+			})
+			label.Parent = sectionContent
+			self.Parent.Parent.Parent:UpdateCanvasSize()
+			return label
+		end
+		
+		function section:CreateButton(text, callback)
+			local button = CreateInstance("TextButton", {
+				Name = "Button",
+				BackgroundColor3 = THEME.Border,
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, 0, 0, 35),
+				Text = text,
+				TextColor3 = THEME.Text,
+				Font = Enum.Font.Gotham,
+				TextSize = 14,
+			})
+			
+			local corner = CreateInstance("UICorner", {
+				CornerRadius = UDim.new(0, 6),
+			})
+			corner.Parent = button
+			
+			button.MouseButton1Click:Connect(function()
+				callback()
+			end)
+			
+			button.Parent = sectionContent
+			self.Parent.Parent.Parent:UpdateCanvasSize()
+			return button
+		end
+		
+		table.insert(self.Sections, section)
+		self.Parent.Parent:UpdateCanvasSize()
+		
+		return section
+	end
+	
+	tabButton.Parent = self.TabScroll
+	tabButton.MouseButton1Click:Connect(function()
+		self:SwitchTab(tab)
+	end)
+	
+	tabButton.MouseEnter:Connect(function()
+		if self.ActiveTab ~= tab then
+			tabButton.BackgroundColor3 = THEME.Border
+		end
+	end)
+	
+	tabButton.MouseLeave:Connect(function()
+		if self.ActiveTab ~= tab then
+			tabButton.BackgroundColor3 = THEME.Secondary
+		end
+	end)
+	
+	table.insert(self.Tabs, tab)
+	
+	if #self.Tabs == 1 then
+		self.ActiveTab = tab
+	end
+	
+	self:UpdateTabSize()
+	self:UpdateCanvasSize()
+	
+	return tab
 end
 
 return Hive

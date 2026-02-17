@@ -4,6 +4,8 @@ local GUI = Hive.new("Example")
 
 GUI:SetToggleKey(Enum.KeyCode.RightShift)
 
+local Main = GUI:CreateTab("Main")
+
 GUI:Toggle()
 
 print("Hive GUI loaded - press RightShift to toggle")
