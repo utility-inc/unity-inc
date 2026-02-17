@@ -1,9 +1,6 @@
 local Hive = {}
 Hive.__index = Hive
 
-local HiveTab = {}
-HiveTab.__index = HiveTab
-
 local Services = {}
 Services.Players = game:GetService("Players")
 Services.TweenService = game:GetService("TweenService")
