@@ -12,8 +12,16 @@ GUI:Tab("Main", function()
             print("Button clicked!")
         end)
     end)
+    
+    GUI:Section("Settings", function()
+        GUI:Slider("Speed", {
+            min = 0,
+            max = 100,
+            default = 50,
+        }, function(value)
+            print("Speed:", value)
+        end)
+    end)
 end)
 
 GUI:Toggle()
-
-print("Hive GUI loaded - press RightShift to toggle")
