@@ -63,6 +63,12 @@ local function applyTheme(themeName)
     print("Theme applied:", themeName)
 end
 
+-- Apply saved theme on startup
+local savedTheme = GUI:Load("Theme")
+if savedTheme then
+    applyTheme(savedTheme)
+end
+
 -- // MAIN TAB
 GUI:Tab("Main", function()
     GUI:Section("Welcome", function()
@@ -84,6 +90,7 @@ GUI:Tab("Settings", function()
             options = {"Default", "Green", "Red", "Orange"},
             default = "Default",
             mode = "auto",
+            save = true,
         }, function(selected)
             applyTheme(selected)
         end)

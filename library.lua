@@ -20,6 +20,27 @@ local THEME = {
 	Border = Color3.fromRGB(60, 60, 80),
 }
 
+local Config = {}
+Config.FolderName = "unity-inc/"
+Config.CanWriteFile = writefile ~= nil and readfile ~= nil
+
+function Config:Save(name, data)
+	if not self.CanWriteFile then return end
+	if not isfolder(self.FolderName) then makefolder(self.FolderName) end
+	if not isfolder(self.FolderName .. name) then makefolder(self.FolderName .. name) end
+	writefile(self.FolderName .. name .. "/config.json", Services.HttpService:JSONEncode(data))
+end
+
+function Config:Load(name)
+	if not self.CanWriteFile then return nil end
+	local path = self.FolderName .. name .. "/config.json"
+	if isfile(path) then
+		return Services.HttpService:JSONDecode(readfile(path))
+	else
+		return nil
+	end
+end
+
 local function CreateInstance(className, properties)
 	local instance = Instance.new(className)
 	for prop, value in pairs(properties) do
@@ -80,6 +101,7 @@ function Hive.new(scriptName)
 	self.ScriptFolder = GetScriptFolder(self.ScriptName)
 	self.Tabs = {}
 	self.ActiveTab = nil
+	self.Config = Config:Load(self.ScriptName) or {}
 	
 	self:CreateGUI()
 	
@@ -309,6 +331,15 @@ function Hive:Destroy()
 	if self.GUI then
 		self.GUI:Destroy()
 	end
+end
+
+function Hive:Save(key, value)
+	self.Config[key] = value
+	Config:Save(self.ScriptName, self.Config)
+end
+
+function Hive:Load(key)
+	return self.Config[key]
 end
 
 function Hive:CreateTab(name)
@@ -593,7 +624,17 @@ function Hive:Slider(name, options, callback)
 	
 	local min = options.min or 0
 	local max = options.max or 100
+	local shouldSave = options.save or false
 	local default = options.default or min
+	
+	-- Load saved value if save is enabled
+	if shouldSave then
+		local savedValue = self:Load(name)
+		if savedValue ~= nil then
+			default = savedValue
+		end
+	end
+	
 	local value = default
 	
 	local initialPercent = (default - min) / (max - min)
@@ -682,6 +723,10 @@ function Hive:Slider(name, options, callback)
 		knob.Position = UDim2.new(percent, -8, 0.5, -8)
 		valueLabel.Text = tostring(value)
 		
+		if shouldSave then
+			self:Save(name, value)
+		end
+		
 		if callback then callback(value) end
 	end
 	
@@ -743,6 +788,20 @@ function Hive:Dropdown(name, config, callback)
 	local options = config.options or {}
 	local default = config.default or options[1] or "None"
 	local mode = config.mode or "auto"
+	local shouldSave = config.save or false
+	
+	-- Load saved value if save is enabled
+	if shouldSave then
+		local savedValue = self:Load(name)
+		if savedValue ~= nil then
+			for _, v in ipairs(options) do
+				if v == savedValue then
+					default = savedValue
+					break
+				end
+			end
+		end
+	end
 	
 	local currentValue = default
 	local isExpanded = false
@@ -838,6 +897,10 @@ function Hive:Dropdown(name, config, callback)
 		isExpanded = false
 		optionsFrame.Visible = false
 		dropdownButton.Text = name .. ": " .. option .. " ▼"
+		
+		if shouldSave then
+			self:Save(name, option)
+		end
 		
 		if mode == "auto" and callback then
 			callback(option)
