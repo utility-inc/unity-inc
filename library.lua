@@ -622,6 +622,8 @@ end
 function Hive:Toggle(name, config, callback)
 	if not self.CurrentSection then return end
 	
+	config = config or {}
+	
 	local default = config.default or false
 	local keybind = config.keybind
 	local shouldSave = config.save or false
