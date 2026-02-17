@@ -441,4 +441,141 @@ function Hive:UpdateCanvasSize()
 	end
 end
 
+function Hive:Tab(name, callback)
+	local tab = self:FindTab(name)
+	if not tab then
+		tab = self:CreateTab(name)
+	end
+	
+	self.ActiveTab = tab
+	
+	if callback then
+		callback(self)
+	end
+end
+
+function Hive:FindTab(name)
+	for _, tab in ipairs(self.Tabs) do
+		if tab.Name == name then
+			return tab
+		end
+	end
+	return nil
+end
+
+function Hive:Section(name)
+	if not self.ActiveTab then return end
+	
+	local tabContent = self.ActiveTab.ScrollFrame
+	
+	local sectionFrame = CreateInstance("Frame", {
+		Name = "Section_" .. name,
+		BackgroundColor3 = THEME.Secondary,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 30),
+		AutomaticSize = Enum.AutomaticSize.Y,
+	})
+	
+	local sectionLabel = CreateInstance("TextLabel", {
+		Name = "Label",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 0),
+		Size = UDim2.new(1, -20, 0, 30),
+		Text = name,
+		TextColor3 = THEME.Text,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+	})
+	
+	local highlight = CreateInstance("Frame", {
+		Name = "Highlight",
+		BackgroundColor3 = THEME.Accent,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 3, 1, 0),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 0, 0.5, 0),
+	})
+	
+	local sectionContent = CreateInstance("Frame", {
+		Name = "Content",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 0, 0, 30),
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+	})
+	
+	local sectionList = CreateInstance("UIListLayout", {
+		Name = "ListLayout",
+		Padding = UDim.new(0, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		AutomaticSize = Enum.AutomaticSize.Y,
+	})
+	
+	local sectionPadding = CreateInstance("UIPadding", {
+		Name = "Padding",
+		PaddingTop = UDim.new(0, 5),
+		PaddingLeft = UDim.new(0, 10),
+		PaddingRight = UDim.new(0, 10),
+		PaddingBottom = UDim.new(0, 5),
+	})
+	
+	sectionList.Parent = sectionContent
+	sectionPadding.Parent = sectionContent
+	sectionLabel.Parent = sectionFrame
+	highlight.Parent = sectionFrame
+	sectionContent.Parent = sectionFrame
+	sectionFrame.Parent = tabContent
+	
+	self.CurrentSection = sectionContent
+	
+	return sectionContent
+end
+
+function Hive:Label(text)
+	if not self.CurrentSection then return end
+	
+	local label = CreateInstance("TextLabel", {
+		Name = "Label",
+		BackgroundTransparency = 1,
+		Text = text,
+		TextColor3 = THEME.TextSecondary,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.Gotham,
+		TextSize = 14,
+		Size = UDim2.new(1, 0, 0, 20),
+	})
+	label.Parent = self.CurrentSection
+	self:UpdateCanvasSize()
+	return label
+end
+
+function Hive:Button(text, callback)
+	if not self.CurrentSection then return end
+	
+	local button = CreateInstance("TextButton", {
+		Name = "Button",
+		BackgroundColor3 = THEME.Border,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 35),
+		Text = text,
+		TextColor3 = THEME.Text,
+		Font = Enum.Font.Gotham,
+		TextSize = 14,
+	})
+	
+	local corner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 6),
+	})
+	corner.Parent = button
+	
+	button.MouseButton1Click:Connect(function()
+		if callback then callback() end
+	end)
+	
+	button.Parent = self.CurrentSection
+	self:UpdateCanvasSize()
+	return button
+end
+
 return Hive
