@@ -737,6 +737,173 @@ function Hive:Slider(name, options, callback)
 	return sliderObj
 end
 
+function Hive:Dropdown(name, config, callback)
+	if not self.CurrentSection then return end
+	
+	local options = config.options or {}
+	local default = config.default or options[1] or "None"
+	local mode = config.mode or "auto"
+	
+	local currentValue = default
+	local isExpanded = false
+	
+	local dropdownContainer = CreateInstance("Frame", {
+		Name = "Dropdown_" .. name,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 35),
+	})
+	
+	local dropdownButton = CreateInstance("TextButton", {
+		Name = "DropdownButton",
+		BackgroundColor3 = THEME.Border,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 35),
+		Text = name .. ": " .. default .. " ▼",
+		TextColor3 = THEME.Text,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.Gotham,
+		TextSize = 14,
+	})
+	
+	local dropdownPadding = CreateInstance("UIPadding", {
+		PaddingLeft = UDim.new(0, 10),
+	})
+	dropdownPadding.Parent = dropdownButton
+	
+	local corner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 6),
+	})
+	corner.Parent = dropdownButton
+	
+	local optionsFrame = CreateInstance("Frame", {
+		Name = "Options",
+		BackgroundColor3 = THEME.Secondary,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 0, 0, 40),
+		Size = UDim2.new(1, 0, 0, 0),
+		Visible = false,
+		ClipsDescendants = true,
+	})
+	
+	local optionsList = CreateInstance("UIListLayout", {
+		Padding = UDim.new(0, 2),
+	})
+	optionsList.Parent = optionsFrame
+	
+	local optionsPadding = CreateInstance("UIPadding", {
+		PaddingTop = UDim.new(0, 5),
+		PaddingBottom = UDim.new(0, 5),
+		PaddingLeft = UDim.new(0, 5),
+		PaddingRight = UDim.new(0, 5),
+	})
+	optionsPadding.Parent = optionsFrame
+	
+	local executeButton = CreateInstance("TextButton", {
+		Name = "ExecuteButton",
+		BackgroundColor3 = THEME.Accent,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 30),
+		Text = "▶ Execute",
+		TextColor3 = THEME.Text,
+		Font = Enum.Font.Gotham,
+		TextSize = 14,
+		Visible = mode == "manual",
+	})
+	
+	local executeCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 6),
+	})
+	executeCorner.Parent = executeButton
+	
+	local function updateOptionsHeight()
+		local height = #options * 30 + 10
+		optionsFrame.Size = UDim2.new(1, 0, 0, height)
+	end
+	
+	local function selectOption(option)
+		currentValue = option
+		dropdownButton.Text = name .. ": " .. option .. " ▼"
+		isExpanded = false
+		optionsFrame.Visible = false
+		dropdownButton.Text = name .. ": " .. option .. " ▼"
+		
+		if mode == "auto" and callback then
+			callback(option)
+		end
+	end
+	
+	local function toggleDropdown()
+		isExpanded = not isExpanded
+		optionsFrame.Visible = isExpanded
+		if isExpanded then
+			dropdownButton.Text = name .. ": " .. currentValue .. " ▲"
+		else
+			dropdownButton.Text = name .. ": " .. currentValue .. " ▼"
+		end
+	end
+	
+	for _, option in ipairs(options) do
+		local optionButton = CreateInstance("TextButton", {
+			Name = "Option_" .. option,
+			BackgroundColor3 = THEME.Border,
+			BorderSizePixel = 0,
+			Size = UDim2.new(1, 0, 0, 30),
+			Text = option,
+			TextColor3 = THEME.Text,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Font = Enum.Font.Gotham,
+			TextSize = 14,
+		})
+		
+		local optionPadding = CreateInstance("UIPadding", {
+			PaddingLeft = UDim.new(0, 10),
+		})
+		optionPadding.Parent = optionButton
+		
+		local optionCorner = CreateInstance("UICorner", {
+			CornerRadius = UDim.new(0, 4),
+		})
+		optionCorner.Parent = optionButton
+		
+		optionButton.MouseButton1Click:Connect(function()
+			selectOption(option)
+		end)
+		
+		optionButton.Parent = optionsFrame
+	end
+	
+	dropdownButton.MouseButton1Click:Connect(function()
+		toggleDropdown()
+	end)
+	
+	executeButton.MouseButton1Click:Connect(function()
+		if callback then
+			callback(currentValue)
+		end
+	end)
+	
+	executeButton.Parent = dropdownContainer
+	optionsFrame.Parent = dropdownContainer
+	dropdownButton.Parent = dropdownContainer
+	
+	dropdownContainer.Parent = self.CurrentSection
+	
+	updateOptionsHeight()
+	self:UpdateCanvasSize()
+	
+	local dropdownObj = {
+		Value = currentValue,
+		SetValue = function(newValue)
+			selectOption(newValue)
+		end,
+		GetValue = function()
+			return currentValue
+		end,
+	}
+	
+	return dropdownObj
+end
+
 function Hive:Notify(title, message)
 	local Players = Services.Players
 	local player = Players.LocalPlayer

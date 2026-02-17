@@ -29,6 +29,24 @@ GUI:Tab("Main", function()
 end)
 
 GUI:Tab("Settings", function()
+    GUI:Section("Dropdown Example", function()
+        GUI:Dropdown("Theme", {
+            options = {"Light", "Dark", "Blue", "Red"},
+            default = "Dark",
+            mode = "auto",
+        }, function(selected)
+            print("Selected theme:", selected)
+        end)
+        
+        GUI:Dropdown("Mode", {
+            options = {"Option1", "Option2", "Option3"},
+            default = "Option1",
+            mode = "manual",
+        }, function(selected)
+            print("Manual mode selected:", selected)
+        end)
+    end)
+    
     GUI:Section("Credits", function()
         GUI:Label("Scripted by: hive")
         GUI:Label("Library: Hive UI")
