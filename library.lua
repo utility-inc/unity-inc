@@ -76,8 +76,8 @@ function Hive.new(scriptName)
 	self.ToggleKey = Enum.KeyCode.RightShift
 	self.ScriptName = scriptName or "Default"
 	self.ScriptFolder = GetScriptFolder(self.ScriptName)
-	self.Sectors = {}
-	self.ActiveSector = nil
+	self.Tabs = {}
+	self.ActiveTab = nil
 	
 	self:CreateGUI()
 	
@@ -301,16 +301,133 @@ function Hive:SetToggleKey(key)
 	self.ToggleKey = key
 end
 
-function Hive:UpdateCanvasSize()
-	if self.ListLayout and self.ListLayout.AbsoluteContentSize then
-		local layoutOrder = self.ListLayout.AbsoluteContentSize
-		self.ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, layoutOrder.Y + 10)
-	end
-end
-
 function Hive:Destroy()
 	if self.GUI then
 		self.GUI:Destroy()
+	end
+end
+
+function Hive:CreateTab(name)
+	local tabCount = #self.Tabs
+	
+	if tabCount == 0 then
+		self.TabContainer.Visible = true
+		self.ContentFrame.Visible = true
+	end
+	
+	local tabButton = CreateInstance("TextButton", {
+		Name = "Tab_" .. name,
+		BackgroundColor3 = tabCount == 0 and THEME.Accent or THEME.Secondary,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 80, 0, 35),
+		AutoButtonColor = false,
+		Text = name,
+		TextColor3 = THEME.Text,
+		Font = Enum.Font.Gotham,
+		TextSize = 12,
+	})
+	
+	local tabStroke = CreateInstance("UIStroke", {
+		Color = THEME.Border,
+		Thickness = 1,
+	})
+	tabStroke.Parent = tabButton
+	
+	local tabCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 6),
+	})
+	tabCorner.Parent = tabButton
+	
+	local tabPadding = CreateInstance("UIPadding", {
+		PaddingLeft = UDim.new(0, 12),
+		PaddingRight = UDim.new(0, 12),
+	})
+	tabPadding.Parent = tabButton
+	
+	task.wait()
+	tabButton.Size = UDim2.new(0, tabButton.TextBounds.X + 24, 0, 35)
+	
+	local tabContent = CreateInstance("ScrollingFrame", {
+		Name = "TabContent_" .. name,
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 5, 0, 5),
+		Size = UDim2.new(1, -10, 1, -10),
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = THEME.Accent,
+		BorderSizePixel = 0,
+		Visible = tabCount == 0,
+	})
+	
+	local tabListLayout = CreateInstance("UIListLayout", {
+		Padding = UDim.new(0, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	})
+	
+	local tabContentPadding = CreateInstance("UIPadding", {
+		PaddingTop = UDim.new(0, 5),
+	})
+	
+	tabListLayout.Parent = tabContent
+	tabContentPadding.Parent = tabContent
+	tabContent.Parent = self.ContentFrame
+	
+	local tab = {
+		Name = name,
+		Button = tabButton,
+		Content = tabContent,
+		ListLayout = tabListLayout,
+		ScrollFrame = tabContent,
+	}
+	
+	tabButton.Parent = self.TabScroll
+	
+	tabButton.MouseButton1Click:Connect(function()
+		for _, t in ipairs(self.Tabs) do
+			t.Content.Visible = false
+			t.Button.BackgroundColor3 = THEME.Secondary
+		end
+		tabContent.Visible = true
+		tabButton.BackgroundColor3 = THEME.Accent
+		self.ActiveTab = tab
+		self:UpdateCanvasSize()
+	end)
+	
+	tabButton.MouseEnter:Connect(function()
+		if self.ActiveTab ~= tab then
+			tabButton.BackgroundColor3 = THEME.Border
+		end
+	end)
+	
+	tabButton.MouseLeave:Connect(function()
+		if self.ActiveTab ~= tab then
+			tabButton.BackgroundColor3 = THEME.Secondary
+		end
+	end)
+	
+	table.insert(self.Tabs, tab)
+	
+	if tabCount == 0 then
+		self.ActiveTab = tab
+	end
+	
+	self:UpdateTabSize()
+	self:UpdateCanvasSize()
+	
+	return tab
+end
+
+function Hive:UpdateTabSize()
+	local tabWidth = 0
+	for _, tab in ipairs(self.Tabs) do
+		tabWidth = tabWidth + tab.Button.AbsoluteSize.X + 6
+	end
+	self.TabScroll.CanvasSize = UDim2.new(0, tabWidth, 0, 0)
+end
+
+function Hive:UpdateCanvasSize()
+	if self.ActiveTab and self.ActiveTab.ListLayout then
+		local contentSize = self.ActiveTab.ListLayout.AbsoluteContentSize
+		self.ActiveTab.ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 10)
 	end
 end
 
