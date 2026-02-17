@@ -35,6 +35,24 @@ local function Cleanup()
 	end
 end
 
+local function GetVersion()
+	local success, result = pcall(function()
+		local response = game:HttpGet("https://api.github.com/repos/utility-inc/unity-inc/commits?per_page=100")
+		local data = Services.HttpService:JSONDecode(response)
+		return #data
+	end)
+	
+	if success and result then
+		local major = math.floor(result / 100)
+		local minor = result % 100
+		return "v" .. major .. "." .. minor .. ".0"
+	end
+	
+	return "v1.0.0"
+end
+
+local Version = GetVersion()
+
 local RootFolder = nil
 local ScriptFolder = nil
 
@@ -131,7 +149,7 @@ function Hive:CreateGUI()
 		Position = UDim2.new(1, -10, 0, 0),
 		Size = UDim2.new(0, 200, 1, 0),
 		AnchorPoint = Vector2.new(1, 0),
-		Text = "v1.0.0",
+		Text = Version,
 		TextColor3 = THEME.TextSecondary,
 		TextXAlignment = Enum.TextXAlignment.Right,
 		Font = Enum.Font.Gotham,
@@ -351,7 +369,7 @@ function Hive:CreateTab(name)
 	local buttonText = tabButton
 	
 	task.wait()
-	tabButton.Size = UDim2.new(0, tabButton.TextBounds.X + 24, 0, 35)
+	tabButton.Size = UDim2.new(0, tabButton.TextBounds.X + 40, 0, 35)
 	
 	local tabContent = CreateInstance("ScrollingFrame", {
 		Name = "TabContent_" .. name,
