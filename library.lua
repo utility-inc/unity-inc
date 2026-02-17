@@ -588,4 +588,151 @@ function Hive:Button(text, callback)
 	return button
 end
 
+function Hive:Slider(name, options, callback)
+	if not self.CurrentSection then return end
+	
+	local min = options.min or 0
+	local max = options.max or 100
+	local default = options.default or min
+	local value = default
+	
+	local sliderContainer = CreateInstance("Frame", {
+		Name = "Slider_" .. name,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 40),
+	})
+	
+	local sliderLabel = CreateInstance("TextLabel", {
+		Name = "Label",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 0, 0, 0),
+		Size = UDim2.new(1, -50, 0, 20),
+		Text = name,
+		TextColor3 = THEME.Text,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.Gotham,
+		TextSize = 14,
+	})
+	
+	local valueLabel = CreateInstance("TextLabel", {
+		Name = "Value",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(1, -50, 0, 0),
+		Size = UDim2.new(0, 50, 0, 20),
+		AnchorPoint = Vector2.new(1, 0),
+		Text = tostring(default),
+		TextColor3 = THEME.TextSecondary,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		Font = Enum.Font.Gotham,
+		TextSize = 14,
+	})
+	
+	local track = CreateInstance("Frame", {
+		Name = "Track",
+		BackgroundColor3 = THEME.Border,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 0, 0, 25),
+		Size = UDim2.new(1, 0, 0, 6),
+	})
+	
+	local trackCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 3),
+	})
+	trackCorner.Parent = track
+	
+	local fill = CreateInstance("Frame", {
+		Name = "Fill",
+		BackgroundColor3 = THEME.Accent,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 0, 0, 0),
+		Size = UDim2.new(0.5, 0, 1, 0),
+	})
+	
+	local fillCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 3),
+	})
+	fillCorner.Parent = fill
+	
+	local knob = CreateInstance("Frame", {
+		Name = "Knob",
+		BackgroundColor3 = THEME.Text,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0.5, -8, 0.5, -8),
+		Size = UDim2.new(0, 16, 0, 16),
+	})
+	
+	local knobCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 8),
+	})
+	knobCorner.Parent = knob
+	
+	fill.Parent = track
+	knob.Parent = track
+	sliderLabel.Parent = sliderContainer
+	valueLabel.Parent = sliderContainer
+	track.Parent = sliderContainer
+	
+	local function updateSlider(percent)
+		percent = math.clamp(percent, 0, 1)
+		value = math.floor(min + (max - min) * percent)
+		
+		fill.Size = UDim2.new(percent, 0, 1, 0)
+		knob.Position = UDim2.new(percent, -8, 0.5, -8)
+		valueLabel.Text = tostring(value)
+		
+		if callback then callback(value) end
+	end
+	
+	local sliding = false
+	
+	knob.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			sliding = true
+		end
+	end)
+	
+	knob.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			sliding = false
+		end
+	end)
+	
+	track.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			sliding = true
+			local relativeX = (input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X
+			updateSlider(relativeX)
+		end
+	end)
+	
+	track.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			sliding = false
+		end
+	end)
+	
+	Services.UserInputService.InputChanged:Connect(function(input)
+		if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local relativeX = (input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X
+			updateSlider(relativeX)
+		end
+	end)
+	
+	sliderContainer.Parent = self.CurrentSection
+	self:UpdateCanvasSize()
+	
+	local sliderObj = {
+		Value = value,
+		SetValue = function(newValue)
+			local percent = (newValue - min) / (max - min)
+			updateSlider(percent)
+		end,
+		GetValue = function()
+			return value
+		end,
+	}
+	
+	return sliderObj
+end
+
 return Hive

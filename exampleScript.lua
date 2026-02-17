@@ -12,11 +12,15 @@ GUI:Tab("Main", function()
             print("Button clicked!")
         end)
     end)
-end)
-
-GUI:Tab("Settings", function()
-    GUI:Section("Options", function()
-        GUI:Label("Settings go here")
+    
+    GUI:Section("Settings", function()
+        GUI:Slider("Speed", {
+            min = 0,
+            max = 100,
+            default = 50,
+        }, function(value)
+            print("Speed:", value)
+        end)
     end)
 end)
 
