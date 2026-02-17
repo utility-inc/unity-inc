@@ -751,6 +751,7 @@ function Hive:Dropdown(name, config, callback)
 		Name = "Dropdown_" .. name,
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, 0, 0, 35),
+		ClipsDescendants = false,
 	})
 	
 	local dropdownButton = CreateInstance("TextButton", {
@@ -779,7 +780,7 @@ function Hive:Dropdown(name, config, callback)
 		Name = "Options",
 		BackgroundColor3 = THEME.Secondary,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 0, 0, 40),
+		Position = UDim2.new(0, 0, 0, 35),
 		Size = UDim2.new(1, 0, 0, 0),
 		Visible = false,
 		ClipsDescendants = true,
@@ -818,6 +819,11 @@ function Hive:Dropdown(name, config, callback)
 	local function updateOptionsHeight()
 		local height = #options * 30 + 10
 		optionsFrame.Size = UDim2.new(1, 0, 0, height)
+		
+		if mode == "manual" then
+			height = height + 35
+		end
+		dropdownContainer.Size = UDim2.new(1, 0, 0, 35 + height)
 	end
 	
 	local function selectOption(option)
