@@ -99,20 +99,6 @@ GUI:Tab("Main", function()
             })
         end)
     end)
-    
-    GUI:Section("Features", function()
-        GUI:CreateToggle("Infinite Jump", {
-            default = false,
-            keybind = Enum.KeyCode.Space,
-            save = true,
-        }, function(state)
-            if state then
-                enableInfiniteJump()
-            else
-                disableInfiniteJump()
-            end
-        end)
-    end)
 end)
 
 GUI:Tab("Settings", function()
