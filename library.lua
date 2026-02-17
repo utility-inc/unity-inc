@@ -442,12 +442,19 @@ function Hive:UpdateCanvasSize()
 end
 
 function Hive:Tab(name, callback)
-	local tab = self:FindTab(name)
-	if not tab then
-		tab = self:CreateTab(name)
-	end
+	local existingTab = self:FindTab(name)
 	
-	self.ActiveTab = tab
+	if existingTab then
+		for _, t in ipairs(self.Tabs) do
+			t.Content.Visible = false
+			t.Button.BackgroundColor3 = THEME.Secondary
+		end
+		existingTab.Content.Visible = true
+		existingTab.Button.BackgroundColor3 = THEME.Accent
+		self.ActiveTab = existingTab
+	else
+		self.ActiveTab = self:CreateTab(name)
+	end
 	
 	if callback then
 		callback(self)
@@ -463,7 +470,7 @@ function Hive:FindTab(name)
 	return nil
 end
 
-function Hive:Section(name)
+function Hive:Section(name, callback)
 	if not self.ActiveTab then return end
 	
 	local tabContent = self.ActiveTab.ScrollFrame
@@ -528,6 +535,10 @@ function Hive:Section(name)
 	sectionFrame.Parent = tabContent
 	
 	self.CurrentSection = sectionContent
+	
+	if callback then
+		callback(self)
+	end
 	
 	return sectionContent
 end
