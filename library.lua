@@ -96,7 +96,6 @@ function Hive.new(scriptName)
 	self.GUI = nil
 	self.MainFrame = nil
 	self.Visible = false
-	self.ToggleKey = Enum.KeyCode.RightShift
 	self.ScriptName = scriptName or "Default"
 	self.ScriptFolder = GetScriptFolder(self.ScriptName)
 	self.Tabs = {}
@@ -252,7 +251,6 @@ function Hive:CreateGUI()
 	self.ListLayout = listLayout
 	
 	self:MakeDraggable()
-	self:SetupToggleKey()
 end
 
 function Hive:MakeDraggable()
@@ -293,16 +291,6 @@ function Hive:MakeDraggable()
 	self.TitleBar.InputChanged:Connect(inputChanged)
 end
 
-function Hive:SetupToggleKey()
-	Services.UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then return end
-		
-		if input.KeyCode == self.ToggleKey then
-			self:Toggle()
-		end
-	end)
-end
-
 function Hive:Toggle()
 	self.Visible = not self.Visible
 	self.GUI.Enabled = self.Visible
@@ -321,10 +309,6 @@ end
 function Hive:Hide()
 	self.Visible = false
 	self.GUI.Enabled = false
-end
-
-function Hive:SetToggleKey(key)
-	self.ToggleKey = key
 end
 
 function Hive:Destroy()
