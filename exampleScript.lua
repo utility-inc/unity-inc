@@ -148,6 +148,12 @@ GUI:Tab("Settings", function()
             keybind = GUIKeybind,
             default = true,
             save = true,
+        }, function(isOn)
+            if isOn then
+                GUI:Show()
+            else
+                GUI:Hide()
+            end
         })
         
         loadKeybind()
