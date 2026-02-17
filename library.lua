@@ -35,23 +35,7 @@ local function Cleanup()
 	end
 end
 
-local function GetVersion()
-	local success, result = pcall(function()
-		local response = game:HttpGet("https://api.github.com/repos/utility-inc/unity-inc/commits?per_page=100")
-		local data = Services.HttpService:JSONDecode(response)
-		return #data
-	end)
-	
-	if success and result then
-		local major = math.floor(result / 100)
-		local minor = result % 100
-		return "v" .. major .. "." .. minor .. ".0"
-	end
-	
-	return "v1.0.0"
-end
-
-local Version = GetVersion()
+local Version = "v1.0.1"
 
 local RootFolder = nil
 local ScriptFolder = nil
