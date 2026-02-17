@@ -1,9 +1,6 @@
 local Hive = {}
 Hive.__index = Hive
 
-local HiveTab = {}
-HiveTab.__index = HiveTab
-
 local Services = {}
 Services.Players = game:GetService("Players")
 Services.TweenService = game:GetService("TweenService")
@@ -309,16 +306,6 @@ function Hive:UpdateCanvasSize()
 		local contentSize = self.ActiveTab.ListLayout.AbsoluteContentSize
 		self.ActiveTab.ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 10)
 	end
-end
-
-function Hive.tab:new(name)
-	local self = setmetatable({}, HiveTab)
-	
-	self.Name = name
-	self.Parent = nil
-	self.Sections = {}
-	
-	return self
 end
 
 function Hive:CreateTab(name)
