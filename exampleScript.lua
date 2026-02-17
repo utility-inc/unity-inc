@@ -15,34 +15,17 @@ local Settings = GUI:CreateSector("Settings")
 local Features = GUI:CreateSector("Features")
 
 -- Create sections on Main tab
-Main:CreateSection("Welcome"):CreateLabel("Welcome to Hive GUI!")
-Main:CreateSection("Welcome"):CreateLabel("Press Right Shift to toggle")
-Main:CreateSection("Welcome"):CreateLabel("Click tabs above to switch")
+local welcomeSection = Main:CreateSection("Welcome")
+welcomeSection:CreateLabel("Welcome to Hive GUI!")
+welcomeSection:CreateLabel("Press Right Shift to toggle")
+welcomeSection:CreateLabel("Click tabs above to switch")
 
-Main:CreateSection("Buttons"):CreateButton("Notify", function()
+welcomeSection:CreateButton("Notify", function()
     StarterGui:SetCore("SendNotification", {
         Title = "Hive GUI";
         Text = "Button clicked!";
         Duration = 2;
     })
-end)
-
--- Create sections on Features tab
-Features:CreateSection("Feature Toggles"):CreateToggle("Example Toggle", false, function(state)
-    print("Toggle state:", state)
-end)
-
-Features:CreateSection("Feature Toggles"):CreateToggle("Another Toggle", true, function(state)
-    print("Another toggle:", state)
-end)
-
--- Create sections on Settings tab
-Settings:CreateSection("Settings"):CreateSlider("Volume", 0, 100, 50, function(value)
-    print("Volume:", value)
-end)
-
-Settings:CreateSection("Settings"):CreateSlider("Sensitivity", 0, 10, 5, function(value)
-    print("Sensitivity:", value)
 end)
 
 GUI:EnableKeySystem()
