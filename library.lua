@@ -78,6 +78,7 @@ function Hive.new(scriptName)
 	self.ScriptFolder = GetScriptFolder(self.ScriptName)
 	self.Sectors = {}
 	self.ActiveSector = nil
+	self.Tabs = {}
 	
 	self:CreateGUI()
 	
@@ -309,6 +310,8 @@ function Hive:UpdateCanvasSize()
 end
 
 function Hive:CreateTab(name)
+	if not self.ContentFrame or not self.Tabs then return end
+	
 	if #self.Tabs == 0 then
 		self.TabContainer.Visible = true
 		self.ContentFrame.Visible = true
