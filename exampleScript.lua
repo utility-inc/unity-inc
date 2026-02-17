@@ -9,6 +9,7 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local UserInputService = game:GetService("UserInputService")
 
 local GUIKeybind = Enum.KeyCode.RightShift
+local guiToggle = nil
 
 local function toggleGUI()
     GUI:Toggle()
@@ -24,6 +25,9 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     
     if input.KeyCode == GUIKeybind then
         toggleGUI()
+        if guiToggle then
+            guiToggle.SetValue(GUI.Visible)
+        end
     end
 end)
 
@@ -136,10 +140,17 @@ GUI:Tab("Settings", function()
     end)
     
     GUI:Section("UI Configuration", function()
-        GUI:CreateToggle("GUI Keybind", {
+        local guiToggle = GUI:CreateToggle("GUI Keybind", {
             keybind = GUIKeybind,
+            default = true,
             save = true,
-        })
+        }, function(isOn)
+            if isOn then
+                GUI:Show()
+            else
+                GUI:Hide()
+            end
+        end)
         
         local function loadKeybind()
             local savedKey = GUI:Load("GUIKeybind")
@@ -148,6 +159,8 @@ GUI:Tab("Settings", function()
             end
         end
         loadKeybind()
+        
+        GUI:Toggle()
         
         GUI:Button("Unload Script", function()
             GUI:Destroy()
