@@ -368,8 +368,10 @@ function Hive:CreateTab(name)
 	
 	local buttonText = tabButton
 	
-	task.wait()
-	tabButton.Size = UDim2.new(0, tabButton.TextBounds.X + 40, 0, 35)
+	task.wait(0.1)
+	local textWidth = tabButton.TextBounds.X
+	if textWidth < 50 then textWidth = 50 end
+	tabButton.Size = UDim2.new(0, textWidth + 40, 0, 35)
 	
 	local tabContent = CreateInstance("ScrollingFrame", {
 		Name = "TabContent_" .. name,
