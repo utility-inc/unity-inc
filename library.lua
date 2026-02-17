@@ -35,7 +35,7 @@ local function Cleanup()
 	end
 end
 
-local Version = "v1.0.1"
+local Version = "v1.0.2"
 
 local RootFolder = nil
 local ScriptFolder = nil
