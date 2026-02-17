@@ -2,7 +2,8 @@ local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-
 
 local GUI = Hive.new("Example")
 
-game.StarterGui:SetCore("SendNotification", {
+local StarterGui = game:GetService("StarterGui")
+StarterGui:SetCore("SendNotification", {
     Title = "Hive GUI";
     Text = "Loaded successfully | Press RightShift";
     Duration = 3;
@@ -19,7 +20,7 @@ Main:CreateSection("Welcome"):CreateLabel("Press Right Shift to toggle")
 Main:CreateSection("Welcome"):CreateLabel("Click tabs above to switch")
 
 Main:CreateSection("Buttons"):CreateButton("Notify", function()
-    game.StarterGui:SetCore("SendNotification", {
+    StarterGui:SetCore("SendNotification", {
         Title = "Hive GUI";
         Text = "Button clicked!";
         Duration = 2;
