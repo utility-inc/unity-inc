@@ -122,11 +122,6 @@ GUI:Tab("Settings", function()
             keybind = Enum.KeyCode.RightShift,
             save = true,
         }, function(state)
-            if state then
-                GUI:Show()
-            else
-                GUI:Hide()
-            end
         end)
         
         GUI:Button("Unload Script", function()
