@@ -279,13 +279,6 @@ function Hive:SetToggleKey(key)
 	self.ToggleKey = key
 end
 
-function Hive:UpdateCanvasSize()
-	if self.ListLayout and self.ListLayout.AbsoluteContentSize then
-		local layoutOrder = self.ListLayout.AbsoluteContentSize
-		self.ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, layoutOrder.Y + 10)
-	end
-end
-
 function Hive:Destroy()
 	if self.GUI then
 		self.GUI:Destroy()
