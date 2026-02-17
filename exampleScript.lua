@@ -19,7 +19,11 @@ GUI:Tab("Main", function()
         GUI:Label("Welcome to Hive GUI example!")
         GUI:Label("Press " .. tostring(ToggleKey.Name) .. " to toggle gui")
         GUI:Button("Click Me", function()
-            GUI:Notify("Example Button", "Button was pressed!")
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Screen Message";
+                Text = "Hello! This is a Roblox system message.";
+                Duration = 5;
+            })
         end)
     end)
 end)
