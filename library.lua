@@ -836,6 +836,10 @@ function Hive:Dropdown(name, config, callback)
 		if mode == "auto" and callback then
 			callback(option)
 		end
+		
+		task.delay(0.05, function()
+			self:UpdateCanvasSize()
+		end)
 	end
 	
 	local function toggleDropdown()
@@ -846,6 +850,9 @@ function Hive:Dropdown(name, config, callback)
 		else
 			dropdownButton.Text = name .. ": " .. currentValue .. " ▼"
 		end
+		task.delay(0.05, function()
+			self:UpdateCanvasSize()
+		end)
 	end
 	
 	for _, option in ipairs(options) do
