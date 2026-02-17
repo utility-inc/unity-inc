@@ -146,6 +146,7 @@ function Hive:CreateGUI()
 		Size = UDim2.new(1, 0, 0, 45),
 		Position = UDim2.new(0, 0, 0, 35),
 		Visible = false,
+		ZIndex = 2,
 	})
 	
 	local tabPadding = CreateInstance("UIPadding", {
@@ -162,8 +163,9 @@ function Hive:CreateGUI()
 		Size = UDim2.new(1, -10, 1, 0),
 		ScrollBarThickness = 0,
 		BorderSizePixel = 0,
-		ClipsDescendants = false,
+		ClipsDescendants = true,
 		CanvasSize = UDim2.new(0, 0, 0, 0),
+		ZIndex = 2,
 	})
 	
 	local tabList = CreateInstance("UIListLayout", {
@@ -325,11 +327,13 @@ function Hive:CreateTab(name)
 		TextColor3 = THEME.Text,
 		Font = Enum.Font.Gotham,
 		TextSize = 12,
+		ZIndex = 3,
 	})
 	
 	local tabStroke = CreateInstance("UIStroke", {
 		Color = THEME.Border,
 		Thickness = 1,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 	})
 	tabStroke.Parent = tabButton
 	
@@ -343,6 +347,8 @@ function Hive:CreateTab(name)
 		PaddingRight = UDim.new(0, 12),
 	})
 	tabPadding.Parent = tabButton
+	
+	local buttonText = tabButton
 	
 	task.wait()
 	tabButton.Size = UDim2.new(0, tabButton.TextBounds.X + 24, 0, 35)
