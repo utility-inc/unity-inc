@@ -596,6 +596,8 @@ function Hive:Slider(name, options, callback)
 	local default = options.default or min
 	local value = default
 	
+	local initialPercent = (default - min) / (max - min)
+	
 	local sliderContainer = CreateInstance("Frame", {
 		Name = "Slider_" .. name,
 		BackgroundTransparency = 1,
@@ -645,7 +647,7 @@ function Hive:Slider(name, options, callback)
 		BackgroundColor3 = THEME.Accent,
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, 0, 0, 0),
-		Size = UDim2.new(0.5, 0, 1, 0),
+		Size = UDim2.new(initialPercent, 0, 1, 0),
 	})
 	
 	local fillCorner = CreateInstance("UICorner", {
@@ -657,7 +659,7 @@ function Hive:Slider(name, options, callback)
 		Name = "Knob",
 		BackgroundColor3 = THEME.Text,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0.5, -8, 0.5, -8),
+		Position = UDim2.new(initialPercent, -8, 0.5, -8),
 		Size = UDim2.new(0, 16, 0, 16),
 	})
 	

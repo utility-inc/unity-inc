@@ -17,7 +17,7 @@ end)
 GUI:Tab("Settings", function()
     GUI:Section("GUI Settings", function()
         GUI:Slider("Transparency", {
-            min = 0.1,
+            min = 0,
             max = 1,
             default = 1,
         }, function(value)
