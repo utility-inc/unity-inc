@@ -2,8 +2,6 @@ local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-
 
 local GUI = Hive.new("Example")
 
-GUI:SetToggleKey(ToggleKey)
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -89,7 +87,6 @@ end
 GUI:Tab("Main", function()
     GUI:Section("Welcome", function()
         GUI:Label("Welcome to Hive GUI example!")
-        GUI:Label("Press " .. tostring(ToggleKey.Name) .. " to toggle gui")
         GUI:Button("Example button", function()
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Screen Message";
