@@ -770,6 +770,7 @@ function Hive:CreateSector(name, icon)
 			BackgroundColor3 = THEME.Secondary,
 			BorderSizePixel = 0,
 			Size = UDim2.new(1, 0, 0, 30),
+			AutomaticSize = Enum.AutomaticSize.Y,
 			LayoutOrder = #sector.Components + 1,
 		})
 		
@@ -798,13 +799,15 @@ function Hive:CreateSector(name, icon)
 			Name = "Content",
 			BackgroundTransparency = 1,
 			Position = UDim2.new(0, 0, 0, 30),
-			Size = UDim2.new(1, 0, 1, -30),
+			Size = UDim2.new(1, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
 		})
 		
 		local listLayout = CreateInstance("UIListLayout", {
 			Name = "ListLayout",
 			Padding = UDim.new(0, 8),
 			SortOrder = Enum.SortOrder.LayoutOrder,
+			AutomaticSize = Enum.AutomaticSize.Y,
 		})
 		
 		local padding = CreateInstance("UIPadding", {
@@ -1110,6 +1113,7 @@ function Hive:CreateSection(name)
 		BackgroundColor3 = THEME.Secondary,
 		BorderSizePixel = 0,
 		Size = UDim2.new(1, 0, 0, 30),
+		AutomaticSize = Enum.AutomaticSize.Y,
 		LayoutOrder = #targetComponents + 1,
 	})
 	
@@ -1138,13 +1142,15 @@ function Hive:CreateSection(name)
 		Name = "Content",
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 0, 0, 30),
-		Size = UDim2.new(1, 0, 1, -30),
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
 	})
 	
 	local listLayout = CreateInstance("UIListLayout", {
 		Name = "ListLayout",
 		Padding = UDim.new(0, 8),
 		SortOrder = Enum.SortOrder.LayoutOrder,
+		AutomaticSize = Enum.AutomaticSize.Y,
 	})
 	
 	local padding = CreateInstance("UIPadding", {
