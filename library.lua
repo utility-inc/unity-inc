@@ -737,4 +737,62 @@ function Hive:Slider(name, options, callback)
 	return sliderObj
 end
 
+function Hive:Notify(title, message)
+	local Players = Services.Players
+	local player = Players.LocalPlayer
+	
+	local notification = CreateInstance("Frame", {
+		Name = "Notification",
+		BackgroundColor3 = THEME.Secondary,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 10, 0, 10),
+		Size = UDim2.new(0, 250, 0, 60),
+		ZIndex = 10000,
+	})
+	
+	local corner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 8),
+	})
+	corner.Parent = notification
+	
+	local titleLabel = CreateInstance("TextLabel", {
+		Name = "Title",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 5),
+		Size = UDim2.new(1, -20, 0, 20),
+		Text = title or "Notification",
+		TextColor3 = THEME.Text,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+		ZIndex = 10001,
+	})
+	
+	local messageLabel = CreateInstance("TextLabel", {
+		Name = "Message",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 25),
+		Size = UDim2.new(1, -20, 0, 30),
+		Text = message or "",
+		TextColor3 = THEME.TextSecondary,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		Font = Enum.Font.Gotham,
+		TextSize = 12,
+		ZIndex = 10001,
+	})
+	
+	titleLabel.Parent = notification
+	messageLabel.Parent = notification
+	notification.Parent = self.GUI
+	
+	notification.Position = UDim2.new(0, 10, 0, 10)
+	
+	task.delay(3, function()
+		notification:Destroy()
+	end)
+	
+	return notification
+end
+
 return Hive
