@@ -12,14 +12,16 @@ GUI:Tab("Main", function()
             print("Button clicked!")
         end)
     end)
-    
-    GUI:Section("Settings", function()
-        GUI:Slider("Speed", {
-            min = 0,
-            max = 100,
-            default = 50,
+end)
+
+GUI:Tab("Settings", function()
+    GUI:Section("GUI Settings", function()
+        GUI:Slider("Transparency", {
+            min = 0.1,
+            max = 1,
+            default = 1,
         }, function(value)
-            print("Speed:", value)
+            GUI.MainFrame.BackgroundTransparency = 1 - value
         end)
     end)
 end)
