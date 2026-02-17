@@ -2,6 +2,8 @@ local Hive = loadstring(game:HttpGet("https://raw.githubusercontent.com/utility-
 
 local GUI = Hive.new("Example")
 
+GUI:SetToggleKey(Enum.KeyCode.Unknown)
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -82,8 +84,7 @@ local savedTheme = GUI:Load("Theme")
 if savedTheme then
     applyTheme(savedTheme)
 end
-
--- // MAIN TAB
+-- main
 GUI:Tab("Main", function()
     GUI:Section("Welcome", function()
         GUI:Label("Welcome to Hive GUI example!")
