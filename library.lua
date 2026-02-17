@@ -9,27 +9,7 @@ local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local Storage = {}
-Storage.FolderName = "HiveConfigs/"
-Storage.CanWriteFile = writefile ~= nil and readfile ~= nil and isfolder ~= nil and makefolder ~= nil and isfile ~= nil
-
-function Storage:Save(name, data)
-	if not self.CanWriteFile then return end
-	if not isfolder(self.FolderName) then makefolder(self.FolderName) end
-	writefile(self.FolderName .. name .. ".json", HttpService:JSONEncode(data))
-end
-
-function Storage:Load(name)
-	if not self.CanWriteFile then return nil end
-	local path = self.FolderName .. name .. ".json"
-	if isfile(path) then
-		local success, result = pcall(function()
-			return HttpService:JSONDecode(readfile(path))
-		end)
-		return success and result or nil
-	end
-	return nil
-end
+local OriginalAttributes = {}
 
 local THEME = {
 	Background = Color3.fromRGB(25, 25, 35),
@@ -63,6 +43,15 @@ local function Cleanup()
 	if oldGui then
 		oldGui:Destroy()
 	end
+	
+	for attr, value in pairs(OriginalAttributes) do
+		if value == nil then
+			LocalPlayer:SetAttribute(attr, nil)
+		else
+			LocalPlayer:SetAttribute(attr, value)
+		end
+	end
+	OriginalAttributes = {}
 end
 
 local RootFolder = nil
@@ -89,6 +78,18 @@ local function GetScriptFolder(scriptName)
 			ScriptFolder.Name = scriptName
 			ScriptFolder.Parent = root
 		end
+		
+		if not ScriptFolder:FindFirstChild("config") then
+			local config = Instance.new("Folder")
+			config.Name = "config"
+			config.Parent = ScriptFolder
+		end
+		
+		if not ScriptFolder:FindFirstChild("flags") then
+			local flags = Instance.new("Folder")
+			flags.Name = "flags"
+			flags.Parent = ScriptFolder
+		end
 	end
 	return ScriptFolder
 end
@@ -111,8 +112,6 @@ function Hive.new(scriptName)
 	self.ToggleKey = Enum.KeyCode.RightShift
 	self.ScriptName = scriptName or "Default"
 	self.ScriptFolder = GetScriptFolder(self.ScriptName)
-	self.SavedConfig = {}
-	self.SavedFlags = {}
 	
 	self:LoadSavedData()
 	self:CreateGUI()
@@ -121,38 +120,99 @@ function Hive.new(scriptName)
 end
 
 function Hive:LoadSavedData()
-	if Storage.CanWriteFile then
-		local configData = Storage:Load(self.ScriptName .. "_config")
-		if configData then
-			self.SavedConfig = configData
-		end
-		local flagsData = Storage:Load(self.ScriptName .. "_flags")
-		if flagsData then
-			self.SavedFlags = flagsData
+	local config = self.ScriptFolder:FindFirstChild("config")
+	local flags = self.ScriptFolder:FindFirstChild("flags")
+	
+	if config then
+		for _, child in ipairs(config:GetChildren()) do
+			if child:IsA("StringValue") then
+				local key = child.Name
+				local value = child.Value
+				
+				if value == "true" then
+					self.SavedConfig = self.SavedConfig or {}
+					self.SavedConfig[key] = true
+				elseif value == "false" then
+					self.SavedConfig = self.SavedConfig or {}
+					self.SavedConfig[key] = false
+				elseif tonumber(value) then
+					self.SavedConfig = self.SavedConfig or {}
+					self.SavedConfig[key] = tonumber(value)
+				else
+					self.SavedConfig = self.SavedConfig or {}
+					self.SavedConfig[key] = value
+				end
+			end
 		end
 	end
+	
+	if flags then
+		for _, child in ipairs(flags:GetChildren()) do
+			if child:IsA("StringValue") then
+				local key = child.Name
+				local value = child.Value
+				
+				if value == "true" then
+					self.SavedFlags = self.SavedFlags or {}
+					self.SavedFlags[key] = true
+				elseif value == "false" then
+					self.SavedFlags = self.SavedFlags or {}
+					self.SavedFlags[key] = false
+				elseif tonumber(value) then
+					self.SavedFlags = self.SavedFlags or {}
+					self.SavedFlags[key] = tonumber(value)
+				else
+					self.SavedFlags = self.SavedFlags or {}
+					self.SavedFlags[key] = value
+				end
+			end
+		end
+	end
+	
+	self.SavedConfig = self.SavedConfig or {}
+	self.SavedFlags = self.SavedFlags or {}
 end
 
 function Hive:SaveConfig(key, value)
 	self.SavedConfig[key] = value
-	if Storage.CanWriteFile then
-		Storage:Save(self.ScriptName .. "_config", self.SavedConfig)
+	
+	local config = self.ScriptFolder:FindFirstChild("config")
+	if config then
+		local existing = config:FindFirstChild(key)
+		if existing then
+			existing:Destroy()
+		end
+		
+		local stringValue = Instance.new("StringValue")
+		stringValue.Name = key
+		stringValue.Value = tostring(value)
+		stringValue.Parent = config
 	end
 end
 
 function Hive:LoadConfig(key)
-	return self.SavedConfig[key]
+	return self.SavedConfig and self.SavedConfig[key]
 end
 
 function Hive:SaveFlag(key, value)
 	self.SavedFlags[key] = value
-	if Storage.CanWriteFile then
-		Storage:Save(self.ScriptName .. "_flags", self.SavedFlags)
+	
+	local flags = self.ScriptFolder:FindFirstChild("flags")
+	if flags then
+		local existing = flags:FindFirstChild(key)
+		if existing then
+			existing:Destroy()
+		end
+		
+		local stringValue = Instance.new("StringValue")
+		stringValue.Name = key
+		stringValue.Value = tostring(value)
+		stringValue.Parent = flags
 	end
 end
 
 function Hive:LoadFlag(key)
-	return self.SavedFlags[key]
+	return self.SavedFlags and self.SavedFlags[key]
 end
 
 function Hive:CreateGUI()
@@ -173,6 +233,7 @@ function Hive:CreateGUI()
 		Position = UDim2.new(0.5, -225, 0.5, -225),
 		Size = UDim2.new(0, 450, 0, 450),
 		ClipsDescendants = true,
+		Draggable = false,
 	})
 	
 	local titleBar = CreateInstance("Frame", {
@@ -232,6 +293,7 @@ function Hive:CreateGUI()
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, -10, 1, 0),
 		ScrollBarThickness = 0,
+		ScrollBarImageColor3 = THEME.Accent,
 		BorderSizePixel = 0,
 		ClipsDescendants = false,
 		CanvasSize = UDim2.new(0, 0, 0, 0),
@@ -347,9 +409,10 @@ function Hive:SetupToggleKey()
 		end
 		
 		if self.KeySystemEnabled then
-			local callback = self.Keybinds[input.KeyCode]
-			if callback then
-				callback()
+			for key, callback in pairs(self.Keybinds) do
+				if input.KeyCode == key then
+					callback()
+				end
 			end
 		end
 	end)
@@ -366,11 +429,13 @@ end
 
 function Hive:SwitchSector(sectorName)
 	for _, s in ipairs(self.Sectors) do
-		local isActive = s.Name == sectorName
-		s.ScrollFrame.Visible = isActive
-		s.TabButton.BackgroundColor3 = isActive and THEME.Accent or THEME.Secondary
-		if isActive then
+		if s.Name == sectorName then
+			s.ScrollFrame.Visible = true
+			s.TabButton.BackgroundColor3 = THEME.Accent
 			self.ActiveSector = s
+		else
+			s.ScrollFrame.Visible = false
+			s.TabButton.BackgroundColor3 = THEME.Secondary
 		end
 	end
 	self:UpdateCanvasSize()
@@ -467,6 +532,237 @@ function Hive:CreateSector(name, icon)
 	}
 	
 	function sector:CreateSection(name)
+		if sector.Sections[name] then
+			local existingSection = sector.Sections[name]
+			local contentFrame = existingSection:FindFirstChild("Content")
+			if contentFrame then
+				local sectionObj = {
+					Frame = existingSection,
+					Content = contentFrame,
+					Name = name,
+					Parent = sector,
+				}
+				
+				function sectionObj:CreateLabel(text)
+					local label = CreateInstance("TextLabel", {
+						Name = "Label",
+						BackgroundTransparency = 1,
+						Text = text,
+						TextColor3 = THEME.TextSecondary,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						Font = Enum.Font.Gotham,
+						TextSize = 14,
+						Size = UDim2.new(1, 0, 0, 20),
+					})
+					label.Parent = contentFrame
+					return label
+				end
+				
+				function sectionObj:CreateButton(text, callback)
+					local button = CreateInstance("TextButton", {
+						Name = "Button",
+						BackgroundColor3 = THEME.Border,
+						BorderSizePixel = 0,
+						Size = UDim2.new(1, 0, 0, 35),
+						Text = text,
+						TextColor3 = THEME.Text,
+						Font = Enum.Font.Gotham,
+						TextSize = 14,
+					})
+					
+					local corner = CreateInstance("UICorner", {
+						CornerRadius = UDim.new(0, 6),
+					})
+					corner.Parent = button
+					
+					button.MouseButton1Click:Connect(function()
+						callback()
+					end)
+					
+					button.Parent = contentFrame
+					return button
+				end
+				
+				function sectionObj:CreateToggle(toggleName, defaultState, callback)
+					local toggleName = toggleName or "Toggle"
+					local savedState = self.Parent.Parent.Parent:LoadFlag(toggleName)
+					local state = savedState ~= nil and savedState or defaultState
+					
+					local toggleFrame = CreateInstance("Frame", {
+						Name = "Toggle",
+						BackgroundTransparency = 1,
+						Size = UDim2.new(1, 0, 0, 35),
+					})
+					
+					local toggleBg = CreateInstance("Frame", {
+						Name = "ToggleBg",
+						BackgroundColor3 = state and THEME.Accent or THEME.Border,
+						BorderSizePixel = 0,
+						Size = UDim2.new(0, CONFIG.ToggleWidth, 0, CONFIG.ToggleHeight),
+						Position = UDim2.new(1, -CONFIG.ToggleOffset, 0.5, 0),
+					})
+					
+					local toggleKnob = CreateInstance("Frame", {
+						Name = "Knob",
+						BackgroundColor3 = THEME.Text,
+						BorderSizePixel = 0,
+						Size = UDim2.new(0, CONFIG.KnobSize, 0, CONFIG.KnobSize),
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Position = state and UDim2.new(1, -CONFIG.KnobSize/2 - 2, 0.5, 0) or UDim2.new(0, CONFIG.KnobSize/2 + 2, 0.5, 0),
+					})
+					
+					local label = CreateInstance("TextLabel", {
+						Name = "Label",
+						BackgroundTransparency = 1,
+						Size = UDim2.new(1, -(CONFIG.ToggleOffset + CONFIG.ToggleWidth + 10), 1, 0),
+						Text = toggleName,
+						TextColor3 = THEME.Text,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						Font = Enum.Font.Gotham,
+						TextSize = 14,
+					})
+					
+					CreateInstance("UICorner", { CornerRadius = UDim.new(0, CONFIG.ToggleHeight/2) }).Parent = toggleBg
+					CreateInstance("UICorner", { CornerRadius = UDim.new(0, CONFIG.KnobSize/2) }).Parent = toggleKnob
+					
+					local function updateToggle(newState)
+						state = newState
+						toggleBg.BackgroundColor3 = state and THEME.Accent or THEME.Border
+						toggleKnob.Position = state and UDim2.new(1, -CONFIG.KnobSize/2 - 2, 0.5, 0) or UDim2.new(0, CONFIG.KnobSize/2 + 2, 0.5, 0)
+						self.Parent.Parent.Parent:SaveFlag(toggleName, state)
+						callback(state)
+					end
+					
+					toggleBg.InputBegan:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							updateToggle(not state)
+						end
+					end)
+					
+					toggleBg.Parent = toggleFrame
+					toggleKnob.Parent = toggleBg
+					label.Parent = toggleFrame
+					toggleFrame.Parent = contentFrame
+					
+					return {
+						Frame = toggleFrame,
+						Set = updateToggle,
+						Get = function() return state end,
+					}
+				end
+				
+				function sectionObj:CreateSlider(sliderName, min, max, default, callback)
+					local sliderName = sliderName or "Slider"
+					local savedValue = self.Parent.Parent.Parent:LoadFlag(sliderName)
+					local value = savedValue or default
+					
+					local sliderFrame = CreateInstance("Frame", {
+						Name = "Slider",
+						BackgroundColor3 = THEME.Secondary,
+						BorderSizePixel = 0,
+						Size = UDim2.new(1, 0, 0, 50),
+					})
+					
+					local sliderLabel = CreateInstance("TextLabel", {
+						Name = "Label",
+						BackgroundTransparency = 1,
+						Position = UDim2.new(0, 0, 0, 0),
+						Size = UDim2.new(1, -40, 0, 20),
+						Text = sliderName .. ": " .. value,
+						TextColor3 = THEME.Text,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						Font = Enum.Font.Gotham,
+						TextSize = 14,
+					})
+					
+					local sliderBg = CreateInstance("Frame", {
+						Name = "SliderBg",
+						BackgroundColor3 = THEME.Border,
+						BorderSizePixel = 0,
+						Size = UDim2.new(1, -10, 0, 6),
+						Position = UDim2.new(0, 5, 0, 30),
+					})
+					
+					local sliderFill = CreateInstance("Frame", {
+						Name = "SliderFill",
+						BackgroundColor3 = THEME.Accent,
+						BorderSizePixel = 0,
+						Size = UDim2.new((value - min) / (max - min), 0, 1, 0),
+					})
+					
+					local sliderKnob = CreateInstance("Frame", {
+						Name = "Knob",
+						BackgroundColor3 = THEME.Text,
+						BorderSizePixel = 0,
+						Size = UDim2.new(0, 14, 0, 14),
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Position = UDim2.new((value - min) / (max - min), 0, 0.5, 0),
+					})
+					
+					CreateInstance("UICorner", { CornerRadius = UDim.new(0, 3) }).Parent = sliderBg
+					CreateInstance("UICorner", { CornerRadius = UDim.new(0, 7) }).Parent = sliderFill
+					CreateInstance("UICorner", { CornerRadius = UDim.new(0, 7) }).Parent = sliderKnob
+					
+					sliderFill.Parent = sliderBg
+					sliderKnob.Parent = sliderBg
+					sliderLabel.Parent = sliderFrame
+					sliderBg.Parent = sliderFrame
+					sliderFrame.Parent = contentFrame
+					
+					local dragging = false
+					
+					sliderBg.InputBegan:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							dragging = true
+							local relativeX = (input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
+							relativeX = math.clamp(relativeX, 0, 1)
+							value = math.floor(min + (max - min) * relativeX)
+							sliderLabel.Text = sliderName .. ": " .. value
+							sliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
+							sliderKnob.Position = UDim2.new(relativeX, 0, 0.5, 0)
+							self.Parent.Parent.Parent:SaveFlag(sliderName, value)
+							callback(value)
+						end
+					end)
+					
+					UserInputService.InputEnded:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							dragging = false
+						end
+					end)
+					
+					UserInputService.InputChanged:Connect(function(input)
+						if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+							local relativeX = (input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
+							relativeX = math.clamp(relativeX, 0, 1)
+							value = math.floor(min + (max - min) * relativeX)
+							sliderLabel.Text = sliderName .. ": " .. value
+							sliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
+							sliderKnob.Position = UDim2.new(relativeX, 0, 0.5, 0)
+							self.Parent.Parent.Parent:SaveFlag(sliderName, value)
+							callback(value)
+						end
+					end)
+					
+					return {
+						Frame = sliderFrame,
+						Set = function(val)
+							value = math.clamp(val, min, max)
+							local relativeX = (value - min) / (max - min)
+							sliderLabel.Text = sliderName .. ": " .. value
+							sliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
+							sliderKnob.Position = UDim2.new(relativeX, 0, 0.5, 0)
+							self.Parent.Parent.Parent:SaveFlag(sliderName, value)
+							callback(value)
+						end,
+						Get = function() return value end,
+					}
+				end
+				
+				return sectionObj
+			end
+		end
+		
 		local contentFrame = sector.ScrollFrame
 		
 		local sectionFrame = CreateInstance("Frame", {
@@ -474,7 +770,6 @@ function Hive:CreateSector(name, icon)
 			BackgroundColor3 = THEME.Secondary,
 			BorderSizePixel = 0,
 			Size = UDim2.new(1, 0, 0, 30),
-			AutomaticSize = Enum.AutomaticSize.Y,
 			LayoutOrder = #sector.Components + 1,
 		})
 		
@@ -503,15 +798,13 @@ function Hive:CreateSector(name, icon)
 			Name = "Content",
 			BackgroundTransparency = 1,
 			Position = UDim2.new(0, 0, 0, 30),
-			Size = UDim2.new(1, 0, 0, 0),
-			AutomaticSize = Enum.AutomaticSize.Y,
+			Size = UDim2.new(1, 0, 1, -30),
 		})
 		
 		local listLayout = CreateInstance("UIListLayout", {
 			Name = "ListLayout",
 			Padding = UDim.new(0, 8),
 			SortOrder = Enum.SortOrder.LayoutOrder,
-			AutomaticSize = Enum.AutomaticSize.Y,
 		})
 		
 		local padding = CreateInstance("UIPadding", {
@@ -529,13 +822,13 @@ function Hive:CreateSector(name, icon)
 		sectionFrame.Parent = contentFrame
 		
 		table.insert(sector.Components, sectionFrame)
+		sector.Sections[name] = sectionFrame
 		
 		local section = {
 			Frame = sectionFrame,
 			Content = sectionContentFrame,
 			Name = name,
 			Parent = sector,
-			Components = {},
 		}
 		
 		function section:CreateLabel(text)
@@ -550,8 +843,6 @@ function Hive:CreateSector(name, icon)
 				Size = UDim2.new(1, 0, 0, 20),
 			})
 			label.Parent = sectionContentFrame
-			table.insert(self.Components, label)
-			self:UpdateLayout()
 			return label
 		end
 		
@@ -577,13 +868,11 @@ function Hive:CreateSector(name, icon)
 			end)
 			
 			button.Parent = sectionContentFrame
-			table.insert(self.Components, button)
-			self:UpdateLayout()
 			return button
 		end
 		
-		function section:CreateToggle(toggleName, defaultState, callback)
-			toggleName = toggleName or "Toggle"
+		function section:CreateToggle(name, defaultState, callback)
+			local toggleName = name or "Toggle"
 			local savedState = self.Parent.Parent.Parent:LoadFlag(toggleName)
 			local state = savedState ~= nil and savedState or defaultState
 			
@@ -591,7 +880,7 @@ function Hive:CreateSector(name, icon)
 				Name = "Toggle",
 				BackgroundTransparency = 1,
 				Size = UDim2.new(1, 0, 0, 35),
-				LayoutOrder = #section.Components + 1,
+				LayoutOrder = #sector.Components + 1,
 			})
 			
 			local toggleBg = CreateInstance("Frame", {
@@ -642,9 +931,9 @@ function Hive:CreateSector(name, icon)
 			toggleBg.Parent = toggleFrame
 			toggleKnob.Parent = toggleBg
 			label.Parent = toggleFrame
-			toggleFrame.Parent = sectionContentFrame
-			table.insert(self.Components, toggleFrame)
-			self:UpdateLayout()
+			toggleFrame.Parent = contentFrame
+			
+			table.insert(sector.Components, toggleFrame)
 			
 			return {
 				Frame = toggleFrame,
@@ -653,16 +942,17 @@ function Hive:CreateSector(name, icon)
 			}
 		end
 		
-		function section:CreateSlider(sliderName, min, max, default, callback)
-			sliderName = sliderName or "Slider"
+		function section:CreateSlider(name, min, max, default, callback)
+			local sliderName = name or "Slider"
 			local savedValue = self.Parent.Parent.Parent:LoadFlag(sliderName)
 			local value = savedValue or default
 			
 			local sliderFrame = CreateInstance("Frame", {
 				Name = "Slider",
-				BackgroundTransparency = 1,
+				BackgroundColor3 = THEME.Secondary,
+				BorderSizePixel = 0,
 				Size = UDim2.new(1, 0, 0, 50),
-				LayoutOrder = #section.Components + 1,
+				LayoutOrder = #sector.Components + 1,
 			})
 			
 			local sliderLabel = CreateInstance("TextLabel", {
@@ -709,32 +999,21 @@ function Hive:CreateSector(name, icon)
 			sliderKnob.Parent = sliderBg
 			sliderLabel.Parent = sliderFrame
 			sliderBg.Parent = sliderFrame
-			sliderFrame.Parent = sectionContentFrame
+			sliderFrame.Parent = contentFrame
 			
 			local dragging = false
-			
-			local function updateSlider(percent)
-				percent = math.clamp(percent, 0, 1)
-				local newValue = math.floor(min + (max - min) * percent)
-				value = newValue
-				sliderLabel.Text = sliderName .. ": " .. newValue
-				sliderFill.Size = UDim2.new(percent, 0, 1, 0)
-				sliderKnob.Position = UDim2.new(percent, 0, 0.5, 0)
-				self.Parent.Parent.Parent:SaveFlag(sliderName, newValue)
-				callback(newValue)
-			end
-			
-			local function getPercentFromX(x)
-				local absPos = sliderBg.AbsolutePosition
-				local absSize = sliderBg.AbsoluteSize
-				local relativeX = x - absPos.X
-				return math.clamp(relativeX / absSize.X, 0, 1)
-			end
 			
 			sliderBg.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 then
 					dragging = true
-					updateSlider(getPercentFromX(input.Position.X))
+					local relativeX = (input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
+					relativeX = math.clamp(relativeX, 0, 1)
+					value = math.floor(min + (max - min) * relativeX)
+					sliderLabel.Text = sliderName .. ": " .. value
+					sliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
+					sliderKnob.Position = UDim2.new(relativeX, 0, 0.5, 0)
+					self.Parent.Parent.Parent:SaveFlag(sliderName, value)
+					callback(value)
 				end
 			end)
 			
@@ -746,81 +1025,35 @@ function Hive:CreateSector(name, icon)
 			
 			UserInputService.InputChanged:Connect(function(input)
 				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-					updateSlider(getPercentFromX(input.Position.X))
+					local relativeX = (input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
+					relativeX = math.clamp(relativeX, 0, 1)
+					value = math.floor(min + (max - min) * relativeX)
+					sliderLabel.Text = sliderName .. ": " .. value
+					sliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
+					sliderKnob.Position = UDim2.new(relativeX, 0, 0.5, 0)
+					self.Parent.Parent.Parent:SaveFlag(sliderName, value)
+					callback(value)
 				end
 			end)
 			
-			table.insert(self.Components, sliderFrame)
-			self:UpdateLayout()
+			table.insert(sector.Components, sliderFrame)
 			
 			return {
 				Frame = sliderFrame,
-				Set = function(val) updateSlider((val - min) / (max - min)) end,
+				Set = function(val)
+					value = math.clamp(val, min, max)
+					local relativeX = (value - min) / (max - min)
+					sliderLabel.Text = sliderName .. ": " .. value
+					sliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
+					sliderKnob.Position = UDim2.new(relativeX, 0, 0.5, 0)
+					self.Parent.Parent.Parent:SaveFlag(sliderName, value)
+					callback(value)
+				end,
 				Get = function() return value end,
 			}
 		end
 		
-		function section:CreateInput(placeholder, callback)
-			local inputFrame = CreateInstance("Frame", {
-				Name = "Input",
-				BackgroundTransparency = 1,
-				Size = UDim2.new(1, 0, 0, 40),
-				LayoutOrder = #section.Components + 1,
-			})
-			
-			local textBox = CreateInstance("TextBox", {
-				Name = "TextBox",
-				BackgroundColor3 = THEME.Border,
-				BorderSizePixel = 0,
-				Size = UDim2.new(1, 0, 0, 30),
-				Text = "",
-				PlaceholderText = placeholder or "Enter text...",
-				PlaceholderColor3 = THEME.TextSecondary,
-				TextColor3 = THEME.Text,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Font = Enum.Font.Gotham,
-				TextSize = 14,
-			})
-			
-			local corner = CreateInstance("UICorner", {
-				CornerRadius = UDim.new(0, 6),
-			})
-			corner.Parent = textBox
-			
-			local padding = CreateInstance("UIPadding", {
-				PaddingLeft = UDim.new(0, 10),
-			})
-			padding.Parent = textBox
-			
-			textBox.Parent = inputFrame
-			
-			textBox.FocusLost:Connect(function(enterPressed)
-				if enterPressed then
-					callback(textBox.Text)
-				end
-			end)
-			
-			inputFrame.Parent = sectionContentFrame
-			table.insert(self.Components, inputFrame)
-			self:UpdateLayout()
-			
-			return {
-				Frame = inputFrame,
-				GetText = function() return textBox.Text end,
-				SetText = function(t) textBox.Text = t end,
-			}
-		end
-		
-		function section:UpdateLayout()
-			local contentSize = listLayout.AbsoluteContentSize
-			contentFrame.Size = UDim2.new(1, 0, 0, contentSize.Y)
-			sectionFrame.Size = UDim2.new(1, 0, 0, 30 + contentSize.Y)
-			self.Parent.Parent.Parent:UpdateCanvasSize()
-		end
-		
-		table.insert(self.Components, sectionFrame)
-		self.Parent.Parent.Parent:UpdateCanvasSize()
-		
+		section.ListLayout = listLayout
 		return section
 	end
 	
@@ -855,11 +1088,6 @@ function Hive:CreateSector(name, icon)
 	return sector
 end
 
-function Hive:CreateSection(name)
-	if not self.ActiveSector then return end
-	return self.ActiveSector:CreateSection(name)
-end
-
 function Hive:UpdateTabSize()
 	local tabWidth = 0
 	for _, s in ipairs(self.Sectors) do
@@ -869,10 +1097,400 @@ function Hive:UpdateTabSize()
 end
 
 function Hive:UpdateCanvasSize()
-	if self.ListLayout and self.ListLayout.AbsoluteContentSize then
-		local layoutOrder = self.ListLayout.AbsoluteContentSize
-		self.ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, layoutOrder.Y + 10)
+	local layoutOrder = self.ListLayout.AbsoluteContentSize
+	self.ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, layoutOrder.Y + 10)
+end
+
+function Hive:CreateSection(name)
+	local targetScrollFrame = self.ActiveSector and self.ActiveSector.ScrollFrame or self.ScrollFrame
+	local targetComponents = self.ActiveSector and self.ActiveSector.Components or self.Components
+	
+	local sectionFrame = CreateInstance("Frame", {
+		Name = "Section_" .. name,
+		BackgroundColor3 = THEME.Secondary,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 30),
+		LayoutOrder = #targetComponents + 1,
+	})
+	
+	local sectionLabel = CreateInstance("TextLabel", {
+		Name = "Label",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 0),
+		Size = UDim2.new(1, -20, 0, 30),
+		Text = name,
+		TextColor3 = THEME.Text,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+	})
+	
+	local highlight = CreateInstance("Frame", {
+		Name = "Highlight",
+		BackgroundColor3 = THEME.Accent,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 3, 1, 0),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 0, 0.5, 0),
+	})
+	
+	local contentFrame = CreateInstance("Frame", {
+		Name = "Content",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 0, 0, 30),
+		Size = UDim2.new(1, 0, 1, -30),
+	})
+	
+	local listLayout = CreateInstance("UIListLayout", {
+		Name = "ListLayout",
+		Padding = UDim.new(0, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	})
+	
+	local padding = CreateInstance("UIPadding", {
+		Name = "Padding",
+		PaddingTop = UDim.new(0, 5),
+		PaddingLeft = UDim.new(0, 10),
+		PaddingRight = UDim.new(0, 10),
+	})
+	
+	listLayout.Parent = contentFrame
+	padding.Parent = contentFrame
+	sectionLabel.Parent = sectionFrame
+	highlight.Parent = sectionFrame
+	contentFrame.Parent = sectionFrame
+	sectionFrame.Parent = targetScrollFrame
+	
+	table.insert(targetComponents, sectionFrame)
+	
+	local section = {
+		Frame = sectionFrame,
+		Content = contentFrame,
+		Name = name,
+		Parent = self,
+	}
+	
+	function section:CreateLabel(text)
+		local label = CreateInstance("TextLabel", {
+			Name = "Label",
+			BackgroundTransparency = 1,
+			Text = text,
+			TextColor3 = THEME.TextSecondary,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Font = Enum.Font.Gotham,
+			TextSize = 12,
+			Size = UDim2.new(1, 0, 0, 20),
+			LayoutOrder = #section.Components + 1,
+		})
+		label.Parent = contentFrame
+		table.insert(self.Components, label)
+		self:UpdateLayout()
+		return label
 	end
+	
+	function section:CreateButton(text, callback)
+		local button = CreateInstance("TextButton", {
+			Name = "Button",
+			BackgroundColor3 = THEME.Accent,
+			BorderSizePixel = 0,
+			Size = UDim2.new(1, 0, 0, 30),
+			Text = text,
+			TextColor3 = THEME.Text,
+			Font = Enum.Font.GothamBold,
+			TextSize = 14,
+			LayoutOrder = #section.Components + 1,
+		})
+		
+		local corner = CreateInstance("UICorner", {
+			CornerRadius = UDim.new(0, 6),
+		})
+		corner.Parent = button
+		
+		button.MouseButton1Click:Connect(function()
+			callback()
+		end)
+		
+		button.Parent = contentFrame
+		table.insert(self.Components, button)
+		self:UpdateLayout()
+		return button
+	end
+	
+	function section:CreateToggle(name, defaultState, callback)
+		local toggleName = name or "Toggle"
+		local savedState = self.Parent:LoadFlag(toggleName)
+		local state = savedState ~= nil and savedState or defaultState
+		
+		local toggleFrame = CreateInstance("Frame", {
+			Name = "Toggle",
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 35),
+			LayoutOrder = #section.Components + 1,
+		})
+		
+		local toggleBg = CreateInstance("Frame", {
+			Name = "ToggleBg",
+			BackgroundColor3 = state and THEME.Accent or THEME.Border,
+			BorderSizePixel = 0,
+			Size = UDim2.new(0, CONFIG.ToggleWidth, 0, CONFIG.ToggleHeight),
+			Position = UDim2.new(1, -CONFIG.ToggleOffset, 0.5, 0),
+		})
+		
+		local toggleKnob = CreateInstance("Frame", {
+			Name = "Knob",
+			BackgroundColor3 = THEME.Text,
+			BorderSizePixel = 0,
+			Size = UDim2.new(0, CONFIG.KnobSize, 0, CONFIG.KnobSize),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = state and UDim2.new(1, -CONFIG.KnobSize/2 - 2, 0.5, 0) or UDim2.new(0, CONFIG.KnobSize/2 + 2, 0.5, 0),
+		})
+		
+		local label = CreateInstance("TextLabel", {
+			Name = "Label",
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, -(CONFIG.ToggleOffset + CONFIG.ToggleWidth + 10), 1, 0),
+			Text = toggleName,
+			TextColor3 = THEME.Text,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Font = Enum.Font.Gotham,
+			TextSize = 14,
+		})
+		
+		CreateInstance("UICorner", { CornerRadius = UDim.new(0, CONFIG.ToggleHeight/2) }).Parent = toggleBg
+		CreateInstance("UICorner", { CornerRadius = UDim.new(0, CONFIG.KnobSize/2) }).Parent = toggleKnob
+		
+		local function updateToggle(newState)
+			state = newState
+			toggleBg.BackgroundColor3 = state and THEME.Accent or THEME.Border
+			toggleKnob.Position = state and UDim2.new(1, -CONFIG.KnobSize/2 - 2, 0.5, 0) or UDim2.new(0, CONFIG.KnobSize/2 + 2, 0.5, 0)
+			self.Parent:SaveFlag(toggleName, state)
+			callback(state)
+		end
+		
+		toggleBg.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				updateToggle(not state)
+			end
+		end)
+		
+		toggleBg.Parent = toggleFrame
+		toggleKnob.Parent = toggleBg
+		label.Parent = toggleFrame
+		
+		toggleFrame.Parent = contentFrame
+		table.insert(self.Components, toggleFrame)
+		self:UpdateLayout()
+		
+		return {
+			Frame = toggleFrame,
+			Set = updateToggle,
+			Get = function() return state end,
+		}
+	end
+	
+	function section:CreateSlider(name, min, max, default, callback)
+		local sliderName = name or "Slider"
+		local savedValue = self.Parent:LoadFlag(sliderName)
+		local actualValue = savedValue or default
+		
+		local sliderFrame = CreateInstance("Frame", {
+			Name = "Slider",
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 50),
+			LayoutOrder = #section.Components + 1,
+		})
+		
+		local label = CreateInstance("TextLabel", {
+			Name = "Label",
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 20),
+			Text = sliderName,
+			TextColor3 = THEME.Text,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Font = Enum.Font.Gotham,
+			TextSize = 14,
+		})
+		
+		local valueLabel = CreateInstance("TextLabel", {
+			Name = "ValueLabel",
+			BackgroundTransparency = 1,
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, 0, 0, 0),
+			Size = UDim2.new(0, 50, 0, 20),
+			Text = tostring(actualValue),
+			TextColor3 = THEME.AccentLight,
+			TextXAlignment = Enum.TextXAlignment.Right,
+			Font = Enum.Font.GothamBold,
+			TextSize = 14,
+		})
+		
+		local sliderBg = CreateInstance("Frame", {
+			Name = "SliderBg",
+			BackgroundColor3 = THEME.Border,
+			BorderSizePixel = 0,
+			Size = UDim2.new(1, 0, 0, 8),
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 0, 0.5, 10),
+		})
+		
+		local sliderFill = CreateInstance("Frame", {
+			Name = "SliderFill",
+			BackgroundColor3 = THEME.Accent,
+			BorderSizePixel = 0,
+			Size = UDim2.new(0.5, 0, 1, 0),
+		})
+		
+		local sliderKnob = CreateInstance("Frame", {
+			Name = "Knob",
+			BackgroundColor3 = THEME.Text,
+			BorderSizePixel = 0,
+			Size = UDim2.new(0, 16, 0, 16),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+		})
+		
+		local corner = CreateInstance("UICorner", {
+			CornerRadius = UDim.new(0, 4),
+		})
+		corner.Parent = sliderBg
+		
+		local fillCorner = CreateInstance("UICorner", {
+			CornerRadius = UDim.new(0, 4),
+		})
+		fillCorner.Parent = sliderFill
+		
+		local knobCorner = CreateInstance("UICorner", {
+			CornerRadius = UDim.new(0, 8),
+		})
+		knobCorner.Parent = sliderKnob
+		
+		sliderFill.Parent = sliderBg
+		sliderKnob.Parent = sliderBg
+		label.Parent = sliderFrame
+		valueLabel.Parent = sliderFrame
+		sliderBg.Parent = sliderFrame
+		
+		local value = actualValue
+		local dragging = false
+		
+		local function updateSlider(percent)
+			percent = math.clamp(percent, 0, 1)
+			local newValue = math.floor(min + (max - min) * percent)
+			value = newValue
+			
+			sliderFill.Size = UDim2.new(percent, 0, 1, 0)
+			sliderKnob.Position = UDim2.new(percent, 0, 0.5, 0)
+			valueLabel.Text = tostring(newValue)
+			
+			self.Parent:SaveFlag(sliderName, newValue)
+			callback(newValue)
+		end
+		
+		local function getPercentFromX(x)
+			local absPos = sliderBg.AbsolutePosition
+			local absSize = sliderBg.AbsoluteSize
+			local relativeX = x - absPos.X
+			return math.clamp(relativeX / absSize.X, 0, 1)
+		end
+		
+		sliderBg.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				dragging = true
+				updateSlider(getPercentFromX(input.Position.X))
+			end
+		end)
+		
+		sliderBg.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				dragging = false
+			end
+		end)
+		
+		UserInputService.InputChanged:Connect(function(input)
+			if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+				updateSlider(getPercentFromX(input.Position.X))
+			end
+		end)
+		
+		updateSlider((actualValue - min) / (max - min))
+		
+		sliderFrame.Parent = contentFrame
+		table.insert(self.Components, sliderFrame)
+		self:UpdateLayout()
+		
+		return {
+			Frame = sliderFrame,
+			Set = function(val) updateSlider((val - min) / (max - min)) end,
+			Get = function() return value end,
+		}
+	end
+	
+	function section:CreateInput(placeholder, callback)
+		local inputFrame = CreateInstance("Frame", {
+			Name = "Input",
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 40),
+			LayoutOrder = #section.Components + 1,
+		})
+		
+		local textBox = CreateInstance("TextBox", {
+			Name = "TextBox",
+			BackgroundColor3 = THEME.Border,
+			BorderSizePixel = 0,
+			Size = UDim2.new(1, 0, 0, 30),
+			Text = "",
+			PlaceholderText = placeholder or "Enter text...",
+			PlaceholderColor3 = THEME.TextSecondary,
+			TextColor3 = THEME.Text,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Font = Enum.Font.Gotham,
+			TextSize = 14,
+		})
+		
+		local corner = CreateInstance("UICorner", {
+			CornerRadius = UDim.new(0, 6),
+		})
+		corner.Parent = textBox
+		
+		local padding = CreateInstance("UIPadding", {
+			PaddingLeft = UDim.new(0, 10),
+		})
+		padding.Parent = textBox
+		
+		textBox.Parent = inputFrame
+		
+		textBox.FocusLost:Connect(function(enterPressed)
+			if enterPressed then
+				callback(textBox.Text)
+			end
+		end)
+		
+		inputFrame.Parent = contentFrame
+		table.insert(self.Components, inputFrame)
+		self:UpdateLayout()
+		
+		return {
+			Frame = inputFrame,
+			GetText = function() return textBox.Text end,
+			SetText = function(t) textBox.Text = t end,
+		}
+	end
+	
+	function section:UpdateLayout()
+		local contentSize = listLayout.AbsoluteContentSize
+		contentFrame.Size = UDim2.new(1, 0, 0, contentSize.Y)
+		sectionFrame.Size = UDim2.new(1, 0, 0, 30 + contentSize.Y)
+		pcall(function()
+			Hive.UpdateCanvasSize(self.Parent)
+		end)
+	end
+	
+	section.Components = {}
+	
+	table.insert(self.Components, sectionFrame)
+	self:UpdateCanvasSize()
+	
+	return section
 end
 
 function Hive:EnableKeySystem()
