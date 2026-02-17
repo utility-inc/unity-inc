@@ -17,38 +17,38 @@ local Themes = {
     Default = {
         Background = Color3.fromRGB(25, 25, 35),
         Secondary = Color3.fromRGB(35, 35, 50),
-        Accent = Color3.fromRGB(65, 105, 225),
-        AccentLight = Color3.fromRGB(100, 149, 237),
+        Accent = Color3.fromRGB(0, 120, 255),
+        AccentLight = Color3.fromRGB(60, 150, 255),
         Text = Color3.fromRGB(255, 255, 255),
         TextSecondary = Color3.fromRGB(180, 180, 180),
         Border = Color3.fromRGB(60, 60, 80),
     },
     Green = {
-        Background = Color3.fromRGB(25, 35, 30),
-        Secondary = Color3.fromRGB(35, 50, 40),
-        Accent = Color3.fromRGB(46, 204, 113),
-        AccentLight = Color3.fromRGB(100, 230, 150),
+        Background = Color3.fromRGB(20, 30, 25),
+        Secondary = Color3.fromRGB(30, 50, 35),
+        Accent = Color3.fromRGB(0, 255, 127),
+        AccentLight = Color3.fromRGB(80, 255, 160),
         Text = Color3.fromRGB(255, 255, 255),
-        TextSecondary = Color3.fromRGB(180, 200, 180),
-        Border = Color3.fromRGB(60, 90, 70),
+        TextSecondary = Color3.fromRGB(180, 210, 180),
+        Border = Color3.fromRGB(50, 80, 60),
     },
     Red = {
-        Background = Color3.fromRGB(35, 25, 25),
-        Secondary = Color3.fromRGB(50, 35, 35),
-        Accent = Color3.fromRGB(231, 76, 60),
-        AccentLight = Color3.fromRGB(240, 130, 110),
+        Background = Color3.fromRGB(30, 20, 20),
+        Secondary = Color3.fromRGB(45, 30, 30),
+        Accent = Color3.fromRGB(255, 50, 50),
+        AccentLight = Color3.fromRGB(255, 100, 100),
         Text = Color3.fromRGB(255, 255, 255),
-        TextSecondary = Color3.fromRGB(200, 180, 180),
-        Border = Color3.fromRGB(90, 60, 60),
+        TextSecondary = Color3.fromRGB(210, 180, 180),
+        Border = Color3.fromRGB(80, 50, 50),
     },
     Orange = {
-        Background = Color3.fromRGB(35, 30, 25),
-        Secondary = Color3.fromRGB(50, 40, 35),
-        Accent = Color3.fromRGB(230, 126, 34),
-        AccentLight = Color3.fromRGB(240, 160, 100),
+        Background = Color3.fromRGB(30, 25, 20),
+        Secondary = Color3.fromRGB(45, 35, 25),
+        Accent = Color3.fromRGB(255, 140, 0),
+        AccentLight = Color3.fromRGB(255, 180, 80),
         Text = Color3.fromRGB(255, 255, 255),
-        TextSecondary = Color3.fromRGB(200, 190, 180),
-        Border = Color3.fromRGB(90, 70, 60),
+        TextSecondary = Color3.fromRGB(210, 200, 180),
+        Border = Color3.fromRGB(80, 60, 40),
     },
 }
 
@@ -58,6 +58,7 @@ local function applyTheme(themeName)
     
     GUI.MainFrame.BackgroundColor3 = theme.Background
     GUI.TitleBar.BackgroundColor3 = theme.Secondary
+    GUI.TabContainer.BackgroundColor3 = theme.Secondary
     
     print("Theme applied:", themeName)
 end
