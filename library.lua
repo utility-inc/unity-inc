@@ -619,7 +619,7 @@ function Hive:Button(text, callback)
 	return button
 end
 
-function Hive:Toggle(name, config, callback)
+function Hive:CreateToggle(name, config, callback)
 	if not self.CurrentSection then return end
 	
 	config = config or {}
