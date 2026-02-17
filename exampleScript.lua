@@ -4,6 +4,14 @@ local GUI = Hive.new("Example")
 
 GUI:SetToggleKey(Enum.KeyCode.RightShift)
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+end)
+
 GUI:Tab("Main", function()
     GUI:Section("Welcome", function()
         GUI:Label("Welcome to Hive GUI!")
@@ -12,14 +20,18 @@ GUI:Tab("Main", function()
             print("Button clicked!")
         end)
     end)
-    
-    GUI:Section("Settings", function()
+end)
+
+GUI:Tab("Settings", function()
+    GUI:Section("Player", function()
         GUI:Slider("Speed", {
             min = 0,
             max = 100,
-            default = 50,
+            default = 16,
         }, function(value)
-            print("Speed:", value)
+            if Character and Character:FindFirstChild("Humanoid") then
+                Character.Humanoid.WalkSpeed = value
+            end
         end)
     end)
 end)
