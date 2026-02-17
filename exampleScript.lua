@@ -82,6 +82,16 @@ GUI:Tab("Main", function()
             })
         end)
     end)
+    
+    GUI:Section("Features", function()
+        GUI:Toggle("Infinite Jump", {
+            default = false,
+            keybind = Enum.KeyCode.F,
+            save = true,
+        }, function(state)
+            print("Infinite Jump:", state)
+        end)
+    end)
 end)
 
 GUI:Tab("Settings", function()

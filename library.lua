@@ -619,6 +619,156 @@ function Hive:Button(text, callback)
 	return button
 end
 
+function Hive:Toggle(name, config, callback)
+	if not self.CurrentSection then return end
+	
+	local default = config.default or false
+	local keybind = config.keybind
+	local shouldSave = config.save or false
+	local isOn = default
+	
+	-- Load saved state
+	if shouldSave then
+		local savedState = self:Load(name)
+		if savedState ~= nil then
+			isOn = savedState
+		end
+		local savedKey = self:Load(name .. "_Keybind")
+		if savedKey ~= nil then
+			keybind = Enum.KeyCode[savedKey]
+		end
+	end
+	
+	local toggleContainer = CreateInstance("Frame", {
+		Name = "Toggle_" .. name,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 35),
+	})
+	
+	local toggleSwitch = CreateInstance("TextButton", {
+		Name = "Switch",
+		BackgroundColor3 = isOn and THEME.Accent or THEME.Border,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 44, 0, 22),
+		Position = UDim2.new(0, 0, 0.5, -11),
+		AutoButtonColor = false,
+		Text = "",
+	})
+	
+	local switchCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 11),
+	})
+	switchCorner.Parent = toggleSwitch
+	
+	local switchKnob = CreateInstance("Frame", {
+		Name = "Knob",
+		BackgroundColor3 = THEME.Text,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 18, 0, 18),
+		Position = isOn and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9),
+	})
+	
+	local knobCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 9),
+	})
+	knobCorner.Parent = switchKnob
+	
+	local toggleLabel = CreateInstance("TextLabel", {
+		Name = "Label",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 50, 0.5, -10),
+		Size = UDim2.new(1, -100, 0, 20),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Text = name,
+		TextColor3 = THEME.Text,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.Gotham,
+		TextSize = 14,
+	})
+	
+	local keybindBox = CreateInstance("TextButton", {
+		Name = "Keybind",
+		BackgroundColor3 = THEME.Border,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 40, 0, 25),
+		Position = UDim2.new(1, -45, 0.5, -12.5),
+		Text = keybind and keybind.Name or "None",
+		TextColor3 = THEME.Text,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		Font = Enum.Font.Gotham,
+		TextSize = 12,
+		AutoButtonColor = false,
+	})
+	
+	local keybindCorner = CreateInstance("UICorner", {
+		CornerRadius = UDim.new(0, 6),
+	})
+	keybindCorner.Parent = keybindBox
+	
+	switchKnob.Parent = toggleSwitch
+	toggleLabel.Parent = toggleContainer
+	keybindBox.Parent = toggleContainer
+	toggleSwitch.Parent = toggleContainer
+	
+	local isRebinding = false
+	
+	local function updateToggle(state, save)
+		isOn = state
+		toggleSwitch.BackgroundColor3 = isOn and THEME.Accent or THEME.Border
+		switchKnob.Position = isOn and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
+		
+		if save and shouldSave then
+			self:Save(name, isOn)
+		end
+		
+		if callback then callback(isOn) end
+	end
+	
+	toggleSwitch.MouseButton1Click:Connect(function()
+		updateToggle(not isOn, true)
+	end)
+	
+	keybindBox.MouseButton1Click:Connect(function()
+		isRebinding = true
+		keybindBox.Text = "..."
+	end)
+
+	
+	Services.UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		
+		if isRebinding and input.UserInputType == Enum.UserInputType.Keyboard then
+			keybind = input.KeyCode
+			keybindBox.Text = keybind.Name
+			isRebinding = false
+			
+			if shouldSave then
+				self:Save(name .. "_Keybind", keybind.Name)
+			end
+			return
+		end
+		
+		if keybind and input.KeyCode == keybind then
+			updateToggle(not isOn, true)
+		end
+	end)
+	
+	toggleContainer.Parent = self.CurrentSection
+	self:UpdateCanvasSize()
+	
+	local toggleObj = {
+		Value = isOn,
+		SetValue = function(state)
+			updateToggle(state, true)
+		end,
+		GetValue = function()
+			return isOn
+		end,
+	}
+	
+	return toggleObj
+end
+
 function Hive:Slider(name, options, callback)
 	if not self.CurrentSection then return end
 	
