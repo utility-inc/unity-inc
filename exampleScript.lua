@@ -9,8 +9,25 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
+local InfiniteJumpConnection = nil
+
+local function enableInfiniteJump()
+    if InfiniteJumpConnection then return end
+    InfiniteJumpConnection = LocalPlayer.Character.Humanoid.Jumping:Connect(function()
+        LocalPlayer.Character.Humanoid.Jump = true
+    end)
+end
+
+local function disableInfiniteJump()
+    if InfiniteJumpConnection then
+        InfiniteJumpConnection:Disconnect()
+        InfiniteJumpConnection = nil
+    end
+end
+
 LocalPlayer.CharacterAdded:Connect(function(char)
     Character = char
+    disableInfiniteJump()
 end)
 
 local Themes = {
@@ -86,10 +103,14 @@ GUI:Tab("Main", function()
     GUI:Section("Features", function()
         GUI:CreateToggle("Infinite Jump", {
             default = false,
-            keybind = Enum.KeyCode.F,
+            keybind = Enum.KeyCode.Space,
             save = true,
         }, function(state)
-            print("Infinite Jump:", state)
+            if state then
+                enableInfiniteJump()
+            else
+                disableInfiniteJump()
+            end
         end)
     end)
 end)
