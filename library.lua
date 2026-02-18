@@ -1205,7 +1205,7 @@ function Hive:Notify(title, message)
 	notification.Parent = self.GUI
 	
 	task.delay(0.05, function()
-		notification:TweenPosition(UDim2.new(1, -260, 1, -70 - (#self.Notifications) * (notificationHeight + notificationGap)), "Out", "Quad", 0.3, true)
+		notification:TweenPosition(UDim2.new(1, -260, 1, -70 - (#self.Notifications - 1) * (notificationHeight + notificationGap)), "Out", "Quad", 0.3, true)
 	end)
 	
 	table.insert(self.Notifications, notification)
