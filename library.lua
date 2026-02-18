@@ -595,7 +595,7 @@ function Hive:Button(text, callback)
 	corner.Parent = button
 	
 	button.MouseButton1Click:Connect(function()
-		if callback then callback() end
+		if callback then callback(button) end
 	end)
 	
 	button.Parent = self.CurrentSection
