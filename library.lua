@@ -1133,7 +1133,7 @@ function Hive:Notify(title, message)
 		Name = "Notification",
 		BackgroundColor3 = THEME.Secondary,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 10, 0, 10),
+		Position = UDim2.new(1, -260, 1, -70),
 		Size = UDim2.new(0, 250, 0, 60),
 		ZIndex = 10000,
 	})
@@ -1173,8 +1173,6 @@ function Hive:Notify(title, message)
 	titleLabel.Parent = notification
 	messageLabel.Parent = notification
 	notification.Parent = self.GUI
-	
-	notification.Position = UDim2.new(0, 10, 0, 10)
 	
 	task.delay(3, function()
 		notification:Destroy()
