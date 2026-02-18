@@ -1129,11 +1129,41 @@ function Hive:Notify(title, message)
 	local Players = Services.Players
 	local player = Players.LocalPlayer
 	
+	if not self.Notifications then
+		self.Notifications = {}
+	end
+	
+	local notificationHeight = 65
+	local notificationGap = 5
+	local maxNotifications = 5
+	
+	for i, notif in ipairs(self.Notifications) do
+		if not notif or not notif.Parent then
+			table.remove(self.Notifications, i)
+		end
+	end
+	
+	if #self.Notifications >= maxNotifications then
+		local oldest = table.remove(self.Notifications, 1)
+		if oldest and oldest.Parent then
+			oldest:TweenPosition(UDim2.new(1, 20, 1, 0), "Out", "Quad", 0.2, true, function()
+				oldest:Destroy()
+			end)
+		end
+	end
+	
+	for i, notif in ipairs(self.Notifications) do
+		if notif and notif.Parent then
+			local targetY = (i - 1) * (notificationHeight + notificationGap)
+			notif:TweenPosition(UDim2.new(1, -260, 1, -70 - targetY - notificationHeight), "Out", "Quad", 0.3, true)
+		end
+	end
+	
 	local notification = CreateInstance("Frame", {
 		Name = "Notification",
 		BackgroundColor3 = THEME.Secondary,
 		BorderSizePixel = 0,
-		Position = UDim2.new(1, -260, 1, -70),
+		Position = UDim2.new(1, 20, 1, 0),
 		Size = UDim2.new(0, 250, 0, 60),
 		ZIndex = 10000,
 	})
@@ -1174,9 +1204,35 @@ function Hive:Notify(title, message)
 	messageLabel.Parent = notification
 	notification.Parent = self.GUI
 	
-	task.delay(3, function()
-		notification:Destroy()
+	task.delay(0.05, function()
+		notification:TweenPosition(UDim2.new(1, -260, 1, -70 - (#self.Notifications) * (notificationHeight + notificationGap)), "Out", "Quad", 0.3, true)
 	end)
+	
+	table.insert(self.Notifications, notification)
+	
+	local function removeNotification()
+		for i, notif in ipairs(self.Notifications) do
+			if notif == notification then
+				table.remove(self.Notifications, i)
+				break
+			end
+		end
+		
+		notification:TweenPosition(UDim2.new(1, 20, 1, 0), "Out", "Quad", 0.2, true, function()
+			notification:Destroy()
+		end)
+		
+		task.delay(0.05, function()
+			for i, notif in ipairs(self.Notifications) do
+				if notif and notif.Parent then
+					local targetY = (i - 1) * (notificationHeight + notificationGap)
+					notif:TweenPosition(UDim2.new(1, -260, 1, -70 - targetY - notificationHeight), "Out", "Quad", 0.3, true)
+				end
+			end
+		end)
+	end
+	
+	task.delay(3, removeNotification)
 	
 	return notification
 end
